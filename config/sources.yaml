@@ -1,0 +1,168 @@
+sources:
+
+  microdata:
+    name: "MoSPI Microdata Portal"
+    enabled: true
+    base_url: "https://microdata.gov.in"
+    catalog_url: "https://microdata.gov.in/NADA/index.php/catalog"
+    type: "catalogue"
+    method: "web"
+    status: "live"
+
+  data_gov:
+    name: "Open Government Data Platform India"
+    enabled: true
+    base_url: "https://data.gov.in"
+    api_base: "https://api.data.gov.in/resource"
+    type: "api"
+    method: "api"
+    status: "live"
+    api_key_env: "DATA_GOV_API_KEY"
+    # Add one entry per dataset you want catalogued. resource_id is the
+    # only field that must be real: open the dataset's page on data.gov.in,
+    # click its "API" tab, and copy the resource id shown in the example
+    # URL (https://api.data.gov.in/resource/<resource_id>). Nothing is
+    # invented here -- this list starts empty on purpose.
+    #
+    # Example (fill in a real resource_id before using):
+    # resources:
+    #   - resource_id: "REPLACE-WITH-REAL-RESOURCE-ID"
+    #     name: "All India and State/UT-wise Factsheets of NFHS-5, 2019-2021"
+    #     description: "State/UT-level health, population and nutrition indicators."
+    #     category: "Health"
+    #     organization: "Ministry of Health and Family Welfare"
+    resources: []
+
+  ndap:
+    name: "National Data & Analytics Platform"
+    enabled: false
+    base_url: "https://ndap.niti.gov.in"
+    type: "catalogue"
+    status: "blocked"
+    blocked_reason: >
+      ndap.niti.gov.in serves a client-side-rendered React SPA (confirmed:
+      the root page returns an empty <div id="root"></div> with no
+      server-rendered content, and no public JSON API endpoint could be
+      discovered via direct HTTP probing). The current scraper pattern
+      (requests + BeautifulSoup, no JS execution) cannot read this site.
+      Integrating it would require either headless-browser automation
+      (Selenium/Playwright -- a new, heavier dependency) or reverse
+      engineering the site's internal API from browser devtools, which was
+      not attempted since it is undocumented and unstable to build on.
+
+  aikosh:
+    name: "AI Kosh"
+    enabled: true
+    base_url: "https://aikosh.indiaai.gov.in"
+    api_base: "https://aikosha-api.indiaai.gov.in"
+    type: "api"
+    method: "api"
+    status: "live"
+    api_key_env: "AIKOSH_API_KEY"
+    # Add one entry per dataset you want catalogued. Each value must be
+    # a real datasetIdentifier: open a dataset on aikosh.indiaai.gov.in,
+    # click "Download APIs for metadata and data", and copy the
+    # identifier from the datasetIdentifier= query param shown there.
+    #
+    # This batch was discovered via AIKosh's public sitemap.xml (allowed
+    # by robots.txt, unlike /web/* pages) and each one verified live
+    # against the real metadata API before being added here -- see
+    # chat history for the verification run.
+    dataset_ids:
+      - "2011_population_census_district_polygon_geometries"
+      - "2011_population_census_state_polygon_geometries"
+      - "2011_population_census_subdistrict_polygon_geometries"
+      - "2011_population_census_village_level_geometries"
+      - "area_population_density_and_population_2011_census"
+      - "child_population_0_6_years_and_projected_child_population_2011"
+      - "elderly_men_and_women_population_census_2011"
+      - "all_india_and_state_ut_wise_factsheets_of_national_family_health_survey_nfhs_5_2019_2021"
+      - "india_districts_factsheets_of_national_family_health_survey_nfhs_5_2019_2021_provisional"
+      - "child_immunization_and_vitamin_a_supplementation_dlhs_iii_2007_08"
+      - "state_wise_voters_information_during_2024"
+      - "all_india_consumer_price_index_numbers"
+      - "state_level_consumer_price_index_rural_urban_upto_november_2025"
+      - "maternal_health_indicators_in_rural_areas_dlhs_iii_2007_08"
+      - "literacy_rate_in_percentage_as_per_2011_census"
+      - "agriculture_cultivators_2011_census_in_numbers"
+      - "agriculture_laborer_2011_census_in_numbers"
+      - "agriculture_production_of_different_foodgrains_from_year_2003_to_2014_at_all_india_level"
+      - "statewise_distribution_of_employment_by_type_of_sex_social_category"
+      - "state_ut_wise_enrolment_of_students_by_gender_age_group_and_level_of_education_during_2020_21"
+      - "telangana_nutritional_status_of_children_in_anganwadi_centers"
+
+  cowin:
+    name: "CoWIN / Universal Immunization Program (public API)"
+    enabled: true
+    base_url: "https://cdn-api.co-vin.in/api/v2"
+    type: "api"
+    method: "api"
+    status: "unavailable"
+    api_key_env: "COWIN_API_KEY"
+    unavailable_reason: >
+      The historical public endpoint
+      (cdn-api.co-vin.in/api/v2/appointment/sessions/public/findByDistrict)
+      returned HTTP 503 when tested live during this integration. The code
+      in ingestion/cowin.py is a correct, working client against the
+      documented API shape; it simply has nothing to fetch while the
+      service is down or decommissioned post-pandemic. Re-check
+      periodically -- no code change needed if the service returns.
+
+  npci_upi:
+    name: "NPCI UPI Ecosystem Statistics"
+    enabled: true
+    base_url: "https://www.npci.org.in/product/ecosystem-statistics/upi"
+    type: "api"
+    method: "api"
+    status: "unavailable"
+    unavailable_reason: >
+      The page returned HTTP 403 to a plain scripted request during this
+      integration (bot/WAF protection). This project does not attempt to
+      evade that protection (no fingerprint spoofing beyond the same
+      browser User-Agent already used for microdata.gov.in). Only
+      aggregate monthly UPI volume/value figures are published here in any
+      case -- NPCI/RBI do not publish transaction- or individual-level UPI
+      microdata anywhere, at any access level.
+
+  land_records:
+    name: "Land Records (state portals: Bhoomi, Dharani, Bhulekh, NGDRS, etc.)"
+    enabled: false
+    type: "not_implemented"
+    status: "excluded"
+    excluded_reason: >
+      No unified national API exists; each state runs its own portal,
+      almost all requiring an individual survey-number/khata lookup
+      (frequently behind a captcha) rather than bulk export. Beyond the
+      fragmentation, bulk-collecting individual land-ownership records
+      into a central database raises real privacy/legal concerns distinct
+      from the engineering effort -- this was deliberately not built
+      rather than left merely unbuilt.
+
+  eci_election:
+    name: "Election Commission of India -- booth-level results"
+    enabled: false
+    type: "not_implemented"
+    status: "excluded"
+    excluded_reason: >
+      Genuine booth-level results (Form 20) are published by ECI as
+      scanned, per-constituency PDFs, not a bulk API or structured file --
+      every existing open dataset of this kind (datameet, TCPD) was built
+      by scraping/OCR-ing those PDFs over years. That is a distinct,
+      larger project on its own. Constituency-level *aggregate* electoral
+      statistics are available as ordinary data.gov.in resources and can
+      be added via the `data_gov.resources` list above like any other
+      data.gov.in dataset.
+
+  nfhs_microdata:
+    name: "NFHS full unit-level microdata (DHS Program)"
+    enabled: false
+    type: "not_implemented"
+    status: "excluded"
+    excluded_reason: >
+      Unit-level NFHS microdata is distributed by the DHS Program and
+      requires a manual, human-reviewed research-project application
+      (title + justification, ~24h review) -- it is not self-service and
+      cannot be automated or scripted. NFHS-5 *aggregate* state/UT
+      factsheets are published as an ordinary data.gov.in resource and
+      should be added via `data_gov.resources` instead, which is
+      self-service today.
