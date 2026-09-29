@@ -8,3 +8,4 @@ aikosh
 pyshp
 shapely
 plotly
+pypdf
