@@ -3,98 +3,79 @@ HPV vaccination population-impact simulation.
 
 This is a SIMULATION, not a measurement. It combines:
 
-  REAL DATA:
+  REAL DATA (loaded from files in data/reference/ -- see
+  data/reference/SOURCES.md for exact provenance of every value):
     - State boundaries: 2011 Census (PC11) state polygons, downloaded
-      from AI Kosh (Development Data Lab / SHRUG dataset,
-      identifier 8fdfa814-c876-4570-ae76-906c636e3584).
-    - State population: 2011 Census of India official totals, using
-      the SAME undivided state boundaries as the geometry (pre-2014
-      Andhra Pradesh/Telangana split, pre-2019 Jammu & Kashmir/Ladakh
-      split, pre-2020 Daman & Diu / Dadra & Nagar Haveli merger) so
-      population and geometry refer to the same 35 units.
+      from AI Kosh (Development Data Lab / SHRUG dataset).
+    - State population: 2011 Census of India official totals
+      (data/reference/state_population_2011.csv), using the SAME
+      undivided state boundaries as the geometry.
 
   MODELING ASSUMPTIONS (clearly separated, not sourced from our
-  dataset catalogue -- these are standard public-health reference
-  values, cited below):
+  dataset catalogue -- standard public-health reference values,
+  loaded from data/reference/reference_constants.json, cited in
+  data/reference/SOURCES.md):
     - Share of population that is girls aged 9-14 (the WHO-recommended
-      primary HPV vaccination cohort): estimated at ~5.8% of total
-      population, derived from the 2011 Census age structure (~29%
-      of India's population was aged 0-14; assuming an even
-      distribution across 15 one-year age bands and a ~50/50 sex
-      split gives roughly 29% / 15 * 6 * 0.5 ~= 5.8%). This is an
-      approximation, not a measured per-state figure.
+      primary HPV vaccination cohort): ~5.8% of total population,
+      an approximation, not a measured per-state figure.
     - Baseline cervical cancer incidence: 18 per 100,000 women per
-      year, India's national age-standardized incidence rate per
-      GLOBOCAN 2020. Reliable state-by-state incidence rates are not
-      available from a single consistent source, so this national
-      rate is applied UNIFORMLY across all states. Geographic
-      variation in the map therefore reflects real population
-      differences, not differential regional health risk.
-    - Vaccine efficacy: 90%, a conservative figure consistent with
-      published clinical trial ranges for HPV vaccines against the
-      HPV strains they cover.
-
-None of the modeling constants below are downloaded data -- they are
-external public-health reference figures, kept separate from the
-`STATE_POPULATION_2011` dict (which IS real Census data) precisely so
-the two are never confused.
+      year, India's national age-standardized rate (GLOBOCAN 2020).
+      Reliable state-by-state incidence rates are not available from
+      a single consistent source, so this national rate is applied
+      UNIFORMLY across all states. Geographic variation in the map
+      therefore reflects real population differences, not
+      differential regional health risk.
+    - Vaccine efficacy: 90%, within published clinical trial ranges.
 """
 
-GIRLS_9_14_SHARE_OF_POPULATION = 0.058
+import csv
+import json
+from pathlib import Path
 
-# 2011 Census sex ratio was ~940 females per 1000 males nationally
-# -> female share of total population = 940 / 1940.
-FEMALE_SHARE_OF_POPULATION = 940 / 1940
+REFERENCE_DIR = (
+    Path(__file__).resolve().parent.parent / "data" / "reference"
+)
 
-# GLOBOCAN 2020's rate is per 100,000 WOMEN, not per 100,000 total
-# population -- it must be applied to the female population, not the
-# whole state population, or female-specific risk is understated.
-CERVICAL_CANCER_INCIDENCE_PER_100K_WOMEN = 18
 
-VACCINE_EFFICACY = 0.90
+def _load_state_population():
 
-# 2011 Census of India, official totals, undivided-state boundaries
-# matching the PC11 state geometry (source: Registrar General & Census
-# Commissioner of India; cross-checked via public references for the
-# undivided AP/J&K/Daman-Diu totals since most modern tables report
-# the post-reorganization split figures instead).
-STATE_POPULATION_2011 = {
-    "Jammu and Kashmir": 12_541_302,
-    "Himachal Pradesh": 6_864_602,
-    "Punjab": 27_743_338,
-    "Chandigarh": 1_055_450,
-    "Uttarakhand": 10_086_292,
-    "Haryana": 25_351_462,
-    "NCT Of Delhi": 16_787_941,
-    "Rajasthan": 68_548_437,
-    "Uttar Pradesh": 199_812_341,
-    "Bihar": 104_099_452,
-    "Sikkim": 610_577,
-    "Arunachal Pradesh": 1_383_727,
-    "Nagaland": 1_978_502,
-    "Manipur": 2_570_390,
-    "Mizoram": 1_097_206,
-    "Tripura": 3_673_917,
-    "Meghalaya": 2_966_889,
-    "Assam": 31_205_576,
-    "West Bengal": 91_276_115,
-    "Jharkhand": 32_988_134,
-    "Odisha": 41_974_219,
-    "Chhattisgarh": 25_545_198,
-    "Madhya Pradesh": 72_626_809,
-    "Gujarat": 60_439_692,
-    "Daman and Diu": 242_911,
-    "Dadra and Nagar Haveli": 342_853,
-    "Maharashtra": 112_374_333,
-    "Andhra Pradesh": 84_580_777,
-    "Karnataka": 61_095_297,
-    "Goa": 1_458_545,
-    "Lakshadweep": 64_473,
-    "Kerala": 33_406_061,
-    "Tamil Nadu": 72_147_030,
-    "Puducherry": 1_247_953,
-    "Andaman and Nicobar Islands": 380_581,
-}
+    path = REFERENCE_DIR / "state_population_2011.csv"
+
+    population = {}
+
+    with open(path, "r", encoding="utf-8", newline="") as file:
+
+        for row in csv.DictReader(file):
+            population[row["state"]] = int(row["population"])
+
+    return population
+
+
+def _load_constants():
+
+    path = REFERENCE_DIR / "reference_constants.json"
+
+    with open(path, "r", encoding="utf-8") as file:
+        return json.load(file)
+
+
+STATE_POPULATION_2011 = _load_state_population()
+
+_constants = _load_constants()
+
+GIRLS_9_14_SHARE_OF_POPULATION = (
+    _constants["girls_9_14_share_of_population"]
+)
+
+FEMALE_SHARE_OF_POPULATION = (
+    _constants["female_share_of_population"]
+)
+
+CERVICAL_CANCER_INCIDENCE_PER_100K_WOMEN = (
+    _constants["cervical_cancer_incidence_per_100k_women"]
+)
+
+VACCINE_EFFICACY = _constants["hpv_vaccine_efficacy"]
 
 
 def eligible_girls(state_name):

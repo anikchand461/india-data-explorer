@@ -1,0 +1,72 @@
+# Reference data sources
+
+These files back the HPV and oral cancer simulation pages. They are
+external reference data, not part of the main dataset catalogue
+(`data/india_data.db`) -- kept as separate flat files since they're a
+small, fixed set of figures, not something `scripts/ingest.py`
+fetches or refreshes.
+
+## state_population_2011.csv
+
+2011 Census of India official state/UT population totals, on the
+**undivided** pre-reorganization boundaries (pre-2014 Andhra
+Pradesh/Telangana split, pre-2019 Jammu & Kashmir/Ladakh split,
+pre-2020 Daman & Diu / Dadra & Nagar Haveli merger) -- matching the
+state boundaries in `data/geo/india_states.geojson`.
+
+Source: Registrar General & Census Commissioner of India, 2011
+Census. Cross-checked via public tabulations (Wikipedia's Census
+2011 summary table) for the modern split figures, with undivided
+totals for AP, J&K, and Daman & Diu / DNH obtained from combining
+their post-split successor units' individually reported 2011 figures.
+
+## nfhs5_tobacco_use_by_state.csv
+
+Percentage of the population age 15+ currently using any tobacco
+product, by state/UT and sex.
+
+Source: National Family Health Survey (NFHS-5), 2019-21, India
+Report, Table 2.36 ("Use of tobacco by the population age 15 and
+over by state/union territory"). Ministry of Health & Family
+Welfare, Government of India / International Institute for
+Population Sciences. Full report:
+https://dhsprogram.com/pubs/pdf/FR375/FR375.pdf (page 79-80).
+Transcribed directly from that table.
+
+NFHS-5 reports on current state boundaries; Andhra Pradesh and Jammu
+& Kashmir rows here are population-weighted averages of NFHS-5's
+separate Andhra Pradesh/Telangana and J&K/Ladakh figures, to match
+the undivided 2011 geometry. Daman and Diu / Dadra and Nagar Haveli
+both carry NFHS-5's single merged-UT rate, since that survey already
+reports them as one union territory.
+
+## reference_constants.json
+
+| Key | Value | Source |
+|---|---|---|
+| `national_oral_cancer_incidence_per_100k` | 10.4 | National Cancer Registry Programme (NCRP), India -- age-standardized rate |
+| `national_tobacco_use_men_pct` / `_women_pct` | 38.0 / 8.9 | NFHS-5 Table 2.36, national total row |
+| `sweden_benchmark_reduction_pct` | 44 | Sweden's documented reduction in tobacco-related mortality vs. the EU average, achieved via smoking-to-snus substitution (smoking prevalence fell from ~35%/28% in 1980 to 5.8% by 2022) |
+| `female_share_of_population` | 940/1940 | 2011 Census national sex ratio (~940 females per 1000 males) |
+| `girls_9_14_share_of_population` | 0.058 | Estimated from 2011 Census age structure (~29% of population aged 0-14, evenly split across ages and sex) -- an approximation, not a measured figure |
+| `cervical_cancer_incidence_per_100k_women` | 18 | GLOBOCAN 2020, India's national age-standardized incidence rate |
+| `hpv_vaccine_efficacy` | 0.90 | Conservative figure within published clinical trial ranges for HPV vaccines |
+
+**Confidence note:** `nfhs5_tobacco_use_by_state.csv` and
+`state_population_2011.csv` were read directly from primary source
+documents. The NCRP and Sweden figures in `reference_constants.json`
+were obtained via search results that cite those primary sources,
+not by opening and reading the primary NCRP/Sweden documents
+directly -- a real but slightly lower confidence level than the
+tobacco/population tables.
+
+**Important scientific caveat on the Sweden figure:** published
+epidemiological literature shows snus use has a *null* association
+with oral cancer specifically (pooled prospective studies, relative
+risk ~0.86-1.1). Sweden's 44% figure reflects overall
+tobacco-related mortality reduction (dominated by lung cancer and
+other smoking-attributable disease via smoking cessation), not a
+measured oral-cancer-specific effect. It is used in the oral cancer
+simulation as a policy-ambition benchmark for a comparable reduction
+in India's own tobacco use, not as a claim that snus itself lowers
+oral cancer risk.

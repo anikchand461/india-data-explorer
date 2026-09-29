@@ -3,106 +3,90 @@ Oral cancer risk projection driven by real, state-level tobacco-use
 data -- built to replace the earlier HPV simulation's flat national
 rate with actual geographic variation.
 
-REAL DATA:
-  - Tobacco use prevalence by state/UT, separately for men and
-    women: NFHS-5 (2019-21) official India Report, Table 2.36
-    ("Use of tobacco by the population age 15 and over by
-    state/union territory"), Ministry of Health & Family Welfare /
-    DHS Program (https://dhsprogram.com/pubs/pdf/FR375/FR375.pdf,
-    page 79-80). Transcribed directly from the published table.
-  - National baseline oral cancer incidence: 10.4 per 100,000
-    (age-standardized rate), National Cancer Registry Programme
-    (NCRP), India.
-  - State population: 2011 Census totals (same source/values as
-    services/hpv_simulation.py), used to weight-average NFHS-5
-    figures across state boundaries that have since split (see
-    below), and to convert incidence rates into case counts.
+All real numbers are loaded from files in data/reference/, not
+hardcoded here -- see data/reference/SOURCES.md for the exact
+provenance and confidence level of every value:
+  - data/reference/nfhs5_tobacco_use_by_state.csv: NFHS-5 (2019-21)
+    Table 2.36, transcribed directly from the official DHS/MoHFW
+    report.
+  - data/reference/reference_constants.json: national oral cancer
+    baseline (NCRP), national tobacco averages (NFHS-5), and the
+    Sweden benchmark figure.
+  - data/reference/state_population_2011.csv: 2011 Census totals
+    (shared with services/hpv_simulation.py).
 
-STATE BOUNDARY RECONCILIATION (NFHS-5 uses CURRENT state boundaries,
-our map geometry is 2011-era undivided boundaries -- see
-services/hpv_simulation.py for why):
-  - Andhra Pradesh (undivided) = population-weighted average of
-    NFHS-5's separate Andhra Pradesh and Telangana figures.
-  - Jammu and Kashmir (undivided, includes Ladakh) =
-    population-weighted average of NFHS-5's separate J&K and
-    Ladakh figures.
-  - Daman and Diu / Dadra and Nagar Haveli: NFHS-5 already reports
-    these as one merged UT ("Dadra & Nagar Haveli and Daman & Diu");
-    that single rate is applied to both of our shapefile's separate
-    2011-era entries, since the merged figure cannot be
-    disaggregated back into two.
+MODELING ASSUMPTION: oral cancer risk is assumed to scale linearly
+with a state's tobacco-use prevalence relative to the national
+average, applied to the national baseline incidence rate. Tobacco
+is the established dominant driver of oral cancer in India, but no
+consistent state-by-state oral cancer incidence dataset exists to
+measure this directly -- so this is a transparent proxy, not a
+measured state-level cancer rate.
 
-MODELING ASSUMPTION (clearly separated from the real data above):
-  Oral cancer risk is assumed to scale linearly with a state's
-  tobacco-use prevalence relative to the national average, applied
-  to the national baseline incidence rate. This is standard
-  practice given tobacco/smokeless tobacco is the dominant,
-  well-established driver of oral cancer in India (NCRP, multiple
-  peer-reviewed sources) -- but it IS a modeling simplification, not
-  a directly measured state-level cancer rate (no consistent
-  state-by-state oral cancer incidence source exists).
-
-ON THE "SWEDEN" BENCHMARK:
-  The literature does NOT support "snus reduces oral cancer" as a
-  direct mechanism -- multiple pooled prospective studies of
-  Swedish snus users show a NULL association with oral cancer risk
-  specifically (relative risk ~0.86-1.1). What Sweden DID achieve,
-  genuinely and well-documented, is a 44% lower tobacco-related
-  mortality and 41% fewer cancer cases than the EU average, driven
-  by smokers substituting snus for cigarettes (smoking prevalence
-  fell from 35%/28% in 1980 to 5.8% by 2022). That 44% figure is
-  used here as a labeled POLICY-AMBITION BENCHMARK -- "what a
-  comparable tobacco-reduction success would mean for India's own,
-  real, oral-cancer-driving product (smokeless tobacco)" -- not as
-  a claim that snus itself lowers oral cancer risk.
+ON THE "SWEDEN" BENCHMARK: the literature does NOT support "snus
+reduces oral cancer" as a direct mechanism -- pooled prospective
+studies of Swedish snus users show a NULL association with oral
+cancer specifically. Sweden's real, documented achievement is 44%
+lower tobacco-related mortality than the EU average, via smokers
+substituting snus for cigarettes. That figure is used here as a
+labeled POLICY-AMBITION BENCHMARK -- what a comparable reduction in
+India's own real oral-cancer driver (smokeless tobacco use) would
+project to -- not a claim that snus itself lowers oral cancer risk.
+See data/reference/SOURCES.md for the full caveat.
 """
 
-NATIONAL_ORAL_CANCER_INCIDENCE_PER_100K = 10.4
+import csv
+import json
+from pathlib import Path
 
-NATIONAL_TOBACCO_USE_MEN = 38.0
-NATIONAL_TOBACCO_USE_WOMEN = 8.9
+REFERENCE_DIR = (
+    Path(__file__).resolve().parent.parent / "data" / "reference"
+)
 
-SWEDEN_BENCHMARK_REDUCTION_PCT = 44
 
-# NFHS-5 Table 2.36, state/UT totals (%), men and women separately.
-# Keys match services.hpv_simulation.STATE_POPULATION_2011 exactly.
-STATE_TOBACCO_USE = {
-    "Jammu and Kashmir": {"men": 38.4, "women": 3.6},
-    "Himachal Pradesh": {"men": 32.2, "women": 1.7},
-    "Punjab": {"men": 12.8, "women": 0.4},
-    "Chandigarh": {"men": 11.9, "women": 0.6},
-    "Uttarakhand": {"men": 33.7, "women": 4.6},
-    "Haryana": {"men": 29.1, "women": 2.6},
-    "NCT Of Delhi": {"men": 26.2, "women": 2.2},
-    "Rajasthan": {"men": 41.9, "women": 6.9},
-    "Uttar Pradesh": {"men": 44.0, "women": 8.5},
-    "Bihar": {"men": 48.9, "women": 5.0},
-    "Sikkim": {"men": 41.5, "women": 11.6},
-    "Arunachal Pradesh": {"men": 50.3, "women": 18.8},
-    "Nagaland": {"men": 48.4, "women": 13.7},
-    "Manipur": {"men": 58.0, "women": 43.3},
-    "Mizoram": {"men": 73.1, "women": 61.7},
-    "Tripura": {"men": 57.2, "women": 50.5},
-    "Meghalaya": {"men": 57.8, "women": 28.3},
-    "Assam": {"men": 51.9, "women": 22.2},
-    "West Bengal": {"men": 48.1, "women": 10.8},
-    "Jharkhand": {"men": 47.4, "women": 8.4},
-    "Odisha": {"men": 51.7, "women": 26.1},
-    "Chhattisgarh": {"men": 43.1, "women": 17.3},
-    "Madhya Pradesh": {"men": 46.4, "women": 10.3},
-    "Gujarat": {"men": 41.2, "women": 8.7},
-    "Daman and Diu": {"men": 38.5, "women": 2.9},
-    "Dadra and Nagar Haveli": {"men": 38.5, "women": 2.9},
-    "Maharashtra": {"men": 33.8, "women": 11.0},
-    "Andhra Pradesh": {"men": 22.5, "women": 4.6},
-    "Karnataka": {"men": 27.3, "women": 8.6},
-    "Goa": {"men": 18.1, "women": 2.6},
-    "Lakshadweep": {"men": 28.5, "women": 17.5},
-    "Kerala": {"men": 16.9, "women": 2.2},
-    "Tamil Nadu": {"men": 20.0, "women": 4.9},
-    "Puducherry": {"men": 14.8, "women": 2.6},
-    "Andaman and Nicobar Islands": {"men": 58.7, "women": 31.2},
-}
+def _load_state_tobacco_use():
+
+    path = REFERENCE_DIR / "nfhs5_tobacco_use_by_state.csv"
+
+    tobacco_use = {}
+
+    with open(path, "r", encoding="utf-8", newline="") as file:
+
+        for row in csv.DictReader(file):
+
+            tobacco_use[row["state"]] = {
+                "men": float(row["men_pct"]),
+                "women": float(row["women_pct"]),
+            }
+
+    return tobacco_use
+
+
+def _load_constants():
+
+    path = REFERENCE_DIR / "reference_constants.json"
+
+    with open(path, "r", encoding="utf-8") as file:
+        return json.load(file)
+
+
+STATE_TOBACCO_USE = _load_state_tobacco_use()
+
+_constants = _load_constants()
+
+NATIONAL_ORAL_CANCER_INCIDENCE_PER_100K = (
+    _constants["national_oral_cancer_incidence_per_100k"]
+)
+
+NATIONAL_TOBACCO_USE_MEN = _constants["national_tobacco_use_men_pct"]
+
+NATIONAL_TOBACCO_USE_WOMEN = (
+    _constants["national_tobacco_use_women_pct"]
+)
+
+SWEDEN_BENCHMARK_REDUCTION_PCT = (
+    _constants["sweden_benchmark_reduction_pct"]
+)
 
 
 def simulate(reduction_pct, sex="combined"):
