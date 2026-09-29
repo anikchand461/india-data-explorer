@@ -25,7 +25,7 @@ def render_sidebar():
             [
                 "🏠 Overview",
                 "🔎 Explore Datasets",
-                "🧬 HPV Impact Simulation"
+                "🚬 Oral Cancer Projection"
             ],
             label_visibility="collapsed"
         )
