@@ -21,7 +21,7 @@ def render_sidebar():
         st.markdown("### Navigation")
 
         page = st.radio(
-            "",
+            "Navigation",
             [
                 "🏠 Overview",
                 "🔎 Explore Datasets",

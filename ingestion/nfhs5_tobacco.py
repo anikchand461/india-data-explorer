@@ -208,6 +208,14 @@ def merge_to_undivided_boundaries(raw):
     if "Delhi" in mapped:
         mapped["NCT Of Delhi"] = mapped.pop("Delhi")
 
+    if "Andaman & Nicobar Islands" in mapped:
+        # The source PDF spells this with "&"; our population/geometry
+        # data spells it "and" -- without this rename the two never
+        # match and this state silently drops out of every map.
+        mapped["Andaman and Nicobar Islands"] = mapped.pop(
+            "Andaman & Nicobar Islands"
+        )
+
     return mapped
 
 
