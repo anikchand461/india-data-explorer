@@ -1,0 +1,11 @@
+Source,Publisher,Survey / data years,Granularity,Used for,Link
+NFHS-5 India Report (Tables 2.35; 2.36; 11.7; 11.10),MoHFW / IIPS via DHS Program,2019-21,National; 36 states x sex x urban/rural; population groups,State tobacco use; who uses tobacco; products; quitting and second-hand smoke,https://dhsprogram.com/pubs/pdf/FR375/FR375.pdf
+NFHS-6 India & State Fact Sheets,IIPS (May 2026),2023-24,35 states (no Manipur) x sex x urban/rural,Latest tobacco and alcohol use; NFHS-5 to 6 trend,https://www.nfhsiips.in/nfhsuser/assets/National%20Family%20Health%20Survey%20(NFHS-6)%202023-2024%20Fact%20Sheets.pdf
+NFHS-5 state fact sheets (open extraction),pratapvardhan/NFHS-5 (CC BY 4.0) from IIPS PDFs,2019-21,36 states,Oral cancer screening (women and men 30-49); alcohol; sex ratio,https://github.com/pratapvardhan/NFHS-5
+NFHS-5 district fact sheets (open extraction; cross-validated),sthejas87 (primary); pratapvardhan + sgrsharma016-ctrl (checks),2019-21,707 districts,District tobacco; alcohol; screening; schooling; sample sizes,https://github.com/sthejas87/nfhs5DistrictAmenityAnalysis
+NFHS-5 survey boundaries,DHS Program Spatial Data Repository,2019-21,36 states; 707 districts,Maps,https://spatialdata.dhsprogram.com/boundaries/
+GATS-2 India Report (Table 4.6),MoHFW / TISS / WHO,2016-17,32 states,Smokeless vs smoked share of tobacco users,https://ntcp.mohfw.gov.in/assets/document/surveys-reports-publications/Global-Adult-Tobacco-Survey-Second-Round-India-2016-2017.pdf
+NCRP 2020 Report (Tables 14.1; 9.2.1),ICMR-NCDIR,Registry 2012-16; projections to 2025,National x sex,Oral cavity cancer cases; stage at diagnosis,https://ncdirindia.org/All_Reports/Report_2020/resources/NCRP_2020_2012_16.pdf
+Census of India 2011,Registrar General of India,2011,36 states (split to current units),Population shares,https://censusindia.gov.in/census.website/
+Asthana et al. 2019 meta-analysis,Nicotine & Tobacco Research 21(9):1162-71,Literature,Relative risk,Smokeless tobacco RR 4.44 (SEAR),https://pubmed.ncbi.nlm.nih.gov/?term=Asthana+Association+of+Smokeless+Tobacco+Use+and+Oral+Cancer+Systematic+Global+Review+Meta-Analysis
+Rahman et al. 2005 meta-analysis,Preventive Medicine,Literature,Relative risk,Bidi smoking OR 2.6 (random effects),https://www.sciencedirect.com/science/article/abs/pii/S0091743504004839

@@ -1,0 +1,55 @@
+dimension,group,sex,urban_pct,rural_pct,total_pct,respondents
+Age,15-19,Women,0.5,1.2,1.0,127052
+Age,15-19,Men,4.2,7.5,6.5,125472
+Age,20-34,Women,2.6,5.0,4.2,347967
+Age,20-34,Men,22.9,33.5,29.8,317016
+Age,35-49,Women,6.2,12.1,10.0,271230
+Age,35-49,Men,38.5,54.6,48.9,254748
+Age,50-64,Women,9.2,18.8,15.6,198163
+Age,50-64,Men,39.4,59.7,52.8,186418
+Age,65 and over,Women,11.6,21.8,18.6,100506
+Age,65 and over,Men,31.0,54.8,47.5,105134
+Schooling,No schooling,Women,14.2,18.3,17.5,346990
+Schooling,No schooling,Men,53.7,64.7,62.6,156277
+Schooling,<5 years complete,Women,11.8,15.8,14.7,71450
+Schooling,<5 years complete,Men,50.2,60.2,57.8,70952
+Schooling,5-7 years complete,Women,6.5,8.3,7.7,135385
+Schooling,5-7 years complete,Men,43.9,52.0,49.7,137685
+Schooling,8-9 years complete,Women,3.8,4.6,4.3,149487
+Schooling,8-9 years complete,Men,34.5,41.9,39.7,180333
+Schooling,10-11 years complete,Women,1.8,2.1,2.0,130828
+Schooling,10-11 years complete,Men,23.8,29.8,27.5,163926
+Schooling,12 or more years complete,Women,0.9,1.1,1.0,210325
+Schooling,12 or more years complete,Men,16.2,20.3,18.3,278669
+Religion,Hindu,Women,5.3,10.5,8.9,851938
+Religion,Hindu,Men,28.9,43.5,38.8,808855
+Religion,Muslim,Women,6.4,11.0,9.1,134517
+Religion,Muslim,Men,31.6,43.0,38.0,124544
+Religion,Christian,Women,6.0,11.6,9.4,27171
+Religion,Christian,Men,20.7,36.2,30.2,24339
+Religion,Sikh,Women,0.6,0.5,0.5,17247
+Religion,Sikh,Men,9.1,12.7,11.6,17831
+Religion,Buddhist/Neo-Buddhist,Women,12.4,17.0,15.2,7207
+Religion,Buddhist/Neo-Buddhist,Men,36.7,45.8,42.2,6817
+Religion,Jain,Women,0.9,3.0,1.3,2914
+Religion,Jain,Men,15.0,22.9,16.5,2846
+Religion,Others,Women,16.5,21.9,20.8,3925
+Religion,Others,Men,34.2,57.2,52.2,3555
+Caste/tribe,Scheduled caste,Women,7.8,11.3,10.3,224930
+Caste/tribe,Scheduled caste,Men,34.8,45.6,42.3,210870
+Caste/tribe,Scheduled tribe,Women,13.6,20.1,19.2,96590
+Caste/tribe,Scheduled tribe,Men,38.1,52.7,50.6,90530
+Caste/tribe,Other backward class,Women,4.4,8.2,7.0,439340
+Caste/tribe,Other backward class,Men,26.9,40.3,35.8,412076
+Caste/tribe,Others,Women,4.5,8.9,7.0,276010
+Caste/tribe,Others,Men,26.8,38.9,33.5,267903
+Wealth quintile,Lowest,Women,18.3,17.4,17.4,194190
+Wealth quintile,Lowest,Men,58.1,58.1,58.1,171153
+Wealth quintile,Second,Women,13.6,11.8,12.0,205010
+Wealth quintile,Second,Men,46.1,47.3,47.1,188884
+Wealth quintile,Middle,Women,8.7,8.1,8.3,210598
+Wealth quintile,Middle,Men,39.7,38.2,38.6,201522
+Wealth quintile,Fourth,Women,5.4,5.0,5.2,214674
+Wealth quintile,Fourth,Men,31.1,30.6,30.8,208540
+Wealth quintile,Highest,Women,2.5,2.9,2.6,220446
+Wealth quintile,Highest,Men,19.9,22.2,20.5,218690

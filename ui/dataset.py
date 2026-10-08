@@ -1,6 +1,3 @@
-import json
-
-import pandas as pd
 import streamlit as st
 
 from services.dataset_service import get_dataset

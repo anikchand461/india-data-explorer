@@ -1,0 +1,21 @@
+product,type,sex,urban_pct,rural_pct,total_pct
+Cigarettes,Smoked,Women,0.1,0.1,0.1
+Cigarettes,Smoked,Men,14.6,12.5,13.2
+Bidis,Smoked,Women,0.0,0.2,0.1
+Bidis,Smoked,Men,4.5,8.3,7.0
+Cigars,Smoked,Women,0.0,0.0,0.0
+Cigars,Smoked,Men,0.6,0.5,0.6
+Pipe,Smoked,Women,0.0,0.0,0.0
+Pipe,Smoked,Men,0.1,0.1,0.1
+Hookah,Smoked,Women,0.0,0.1,0.1
+Hookah,Smoked,Men,0.3,0.7,0.5
+Paan masala / gutkha,Smokeless,Women,1.0,1.6,1.4
+Paan masala / gutkha,Smokeless,Men,12.0,15.8,14.5
+Khaini,Smokeless,Women,0.4,1.1,0.9
+Khaini,Smokeless,Men,6.6,14.5,11.7
+Paan with tobacco,Smokeless,Women,0.7,1.3,1.1
+Paan with tobacco,Smokeless,Men,3.4,6.0,5.1
+Other chewing tobacco,Smokeless,Women,0.2,0.4,0.3
+Other chewing tobacco,Smokeless,Men,1.5,1.9,1.8
+Snuff,Smokeless,Women,0.1,0.1,0.1
+Snuff,Smokeless,Men,0.0,0.1,0.1

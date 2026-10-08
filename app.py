@@ -6,7 +6,7 @@ from services.dataset_service import get_statistics
 from ui.sidebar import render_sidebar
 from ui.search import render_search
 from ui.dataset import render_dataset
-from ui.oral_cancer_map import render_oral_cancer_simulation
+from ui.oral_cancer_map import render_oral_cancer_page
 
 
 load_dotenv()
@@ -140,7 +140,7 @@ elif page == "🔎 Explore Datasets":
         render_search()
 
 
-elif page == "🚬 Oral Cancer Projection":
+elif page == "🚬 Oral Cancer & Tobacco":
 
     if "selected_dataset" in st.session_state:
 
@@ -149,4 +149,4 @@ elif page == "🚬 Oral Cancer Projection":
             None
         )
 
-    render_oral_cancer_simulation()
+    render_oral_cancer_page()

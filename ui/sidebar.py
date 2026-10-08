@@ -25,7 +25,7 @@ def render_sidebar():
             [
                 "🏠 Overview",
                 "🔎 Explore Datasets",
-                "🚬 Oral Cancer Projection"
+                "🚬 Oral Cancer & Tobacco"
             ],
             label_visibility="collapsed"
         )

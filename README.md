@@ -94,6 +94,15 @@ source in `config/sources.yaml`):
 python3 -m scripts.ingest
 ```
 
+Rebuild the Oral Cancer & Tobacco page's data (downloads and parses
+the NFHS-5 report, NFHS-6 fact sheets, NFHS-5 district fact sheets,
+GATS-2, NCRP 2020 and the NFHS-5 survey boundaries; see
+`data/reference/SOURCES.md`):
+
+```bash
+python3 -m scripts.build_oral_cancer_data
+```
+
 Run the app:
 
 ```bash
