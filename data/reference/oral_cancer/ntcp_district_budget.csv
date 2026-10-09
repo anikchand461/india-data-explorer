@@ -1,0 +1,81 @@
+state,district,fy,cotpa_104,tofei_105,cessation_106,ntcp_activity_total,rop_units,source_url
+Haryana,Ambala,2024-25,6.45,0.0,2.2,8.65,Ambala,https://nhmharyana.gov.in/files/DistrictROP2024-25/Ambala_14052024.pdf
+Haryana,Bhiwani,2024-25,6.45,0.0,2.2,8.65,Bhiwani,https://nhmharyana.gov.in/files/DistrictROP2024-25/Bhiwani_14052024.pdf
+Haryana,Charkhi Dadri,2024-25,6.45,0.0,2.2,8.65,CharkhiDadri,https://nhmharyana.gov.in/files/DistrictROP2024-25/CharkhiDadri_14052024.pdf
+Haryana,Faridabad,2024-25,6.45,0.0,8.2,14.65,Faridabad,https://nhmharyana.gov.in/files/DistrictROP2024-25/Faridabad_14052024.pdf
+Haryana,Fatehabad,2024-25,6.45,0.0,2.2,8.65,Fatehabad,https://nhmharyana.gov.in/files/DistrictROP2024-25/Fatehabad_14052024.pdf
+Haryana,Gurgaon,2024-25,6.45,0.0,2.2,8.65,Gurugram,https://nhmharyana.gov.in/files/DistrictROP2024-25/Gurugram_14052024.pdf
+Haryana,Hisar,2024-25,6.45,0.0,5.2,11.65,Hisar,https://nhmharyana.gov.in/files/DistrictROP2024-25/Hisar_14052024.pdf
+Haryana,Jhajjar,2024-25,6.45,0.0,2.2,8.65,Jhajjar,https://nhmharyana.gov.in/files/DistrictROP2024-25/Jhajjar_14052024.pdf
+Haryana,Jind,2024-25,6.45,0.0,2.2,8.65,Jind,https://nhmharyana.gov.in/files/DistrictROP2024-25/Jind_14052024.pdf
+Haryana,Kaithal,2024-25,6.45,0.0,2.2,8.65,Kaithal,https://nhmharyana.gov.in/files/DistrictROP2024-25/Kaithal_14052024.pdf
+Haryana,Karnal,2024-25,6.45,0.0,5.2,11.65,Karnal,https://nhmharyana.gov.in/files/DistrictROP2024-25/Karnal_14052024.pdf
+Haryana,Kurukshetra,2024-25,6.45,0.0,2.2,8.65,Kurukshetra,https://nhmharyana.gov.in/files/DistrictROP2024-25/Kurukshetra_14052024.pdf
+Haryana,Mewat,2024-25,6.45,0.0,5.2,11.65,Mewat,https://nhmharyana.gov.in/files/DistrictROP2024-25/Mewat_14052024.pdf
+Haryana,Mahendragarh,2024-25,6.45,0.0,2.2,8.65,Narnaul,https://nhmharyana.gov.in/files/DistrictROP2024-25/Narnaul_14052024.pdf
+Haryana,Palwal,2024-25,6.45,0.0,2.2,8.65,Palwal,https://nhmharyana.gov.in/files/DistrictROP2024-25/Palwal_14052024.pdf
+Haryana,Panchkula,2024-25,6.45,0.0,2.2,8.65,Panchkula,https://nhmharyana.gov.in/files/DistrictROP2024-25/Panchkula_14052024.pdf
+Haryana,Panipat,2024-25,6.45,0.0,2.2,8.65,Panipat,https://nhmharyana.gov.in/files/DistrictROP2024-25/Panipat_14052024.pdf
+Haryana,Rewari,2024-25,6.45,0.0,2.2,8.65,Rewari,https://nhmharyana.gov.in/files/DistrictROP2024-25/Rewari_14052024.pdf
+Haryana,Rohtak,2024-25,6.45,0.0,5.2,11.65,Rohtak,https://nhmharyana.gov.in/files/DistrictROP2024-25/Rohtak_14052024.pdf
+Haryana,Sirsa,2024-25,6.45,0.0,2.2,8.65,Sirsa,https://nhmharyana.gov.in/files/DistrictROP2024-25/Sirsa_14052024.pdf
+Haryana,Sonipat,2024-25,6.45,0.0,5.2,11.65,Sonipat,https://nhmharyana.gov.in/files/DistrictROP2024-25/Sonipat_14052024.pdf
+Haryana,Yamunanagar,2024-25,6.45,0.0,2.2,8.65,Yamunanagar,https://nhmharyana.gov.in/files/DistrictROP2024-25/Yamunanagar_14052024.pdf
+Sikkim,East District,2024-25,1.1,2.3,1.2,4.6,Gangtok + Pakyong,https://nhmsikkim.org/media/gfldgsnv/districtwise-rop_2024_25.xlsx
+Sikkim,West District,2024-25,1.2,2.2,1.0,4.4,Gyalshing + Soreng,https://nhmsikkim.org/media/gfldgsnv/districtwise-rop_2024_25.xlsx
+Sikkim,North  District,2024-25,0.75,1.0,0.5,2.25,Mangan,https://nhmsikkim.org/media/gfldgsnv/districtwise-rop_2024_25.xlsx
+Sikkim,South District,2024-25,1.0,1.2,1.2,3.4,Namchi,https://nhmsikkim.org/media/gfldgsnv/districtwise-rop_2024_25.xlsx
+Meghalaya,East Khasi Hills,2024-25,0.0,2.0,0.0,2.0,EKH,https://nhmmeghalaya.nic.in/ROPs/DROP%20NHM%20Meghalaya%202024-26.xlsx
+Meghalaya,West Khasi Hills,2024-25,0.0,3.5,0.0,3.5,WKH,https://nhmmeghalaya.nic.in/ROPs/DROP%20NHM%20Meghalaya%202024-26.xlsx
+Meghalaya,South West Khasi Hills,2024-25,0.0,2.0,0.0,2.0,SWKH,https://nhmmeghalaya.nic.in/ROPs/DROP%20NHM%20Meghalaya%202024-26.xlsx
+Meghalaya,West Jaintia Hills,2024-25,0.0,2.0,0.0,2.0,WJH,https://nhmmeghalaya.nic.in/ROPs/DROP%20NHM%20Meghalaya%202024-26.xlsx
+Meghalaya,East Jantia Hills,2024-25,0.0,0.5,0.0,0.5,EJH,https://nhmmeghalaya.nic.in/ROPs/DROP%20NHM%20Meghalaya%202024-26.xlsx
+Meghalaya,Ribhoi,2024-25,0.0,2.0,0.0,2.0,RB,https://nhmmeghalaya.nic.in/ROPs/DROP%20NHM%20Meghalaya%202024-26.xlsx
+Meghalaya,West Garo Hills,2024-25,0.0,2.0,0.0,2.0,WGH,https://nhmmeghalaya.nic.in/ROPs/DROP%20NHM%20Meghalaya%202024-26.xlsx
+Meghalaya,South West Garo Hills,2024-25,0.0,2.0,0.0,2.0,SWGH,https://nhmmeghalaya.nic.in/ROPs/DROP%20NHM%20Meghalaya%202024-26.xlsx
+Meghalaya,East Garo Hills,2024-25,0.0,2.0,0.0,2.0,EGH,https://nhmmeghalaya.nic.in/ROPs/DROP%20NHM%20Meghalaya%202024-26.xlsx
+Meghalaya,North Garo Hills,2024-25,0.0,2.0,0.0,2.0,NGH,https://nhmmeghalaya.nic.in/ROPs/DROP%20NHM%20Meghalaya%202024-26.xlsx
+Meghalaya,South Garo Hills,2024-25,0.0,2.0,0.0,2.0,SGH,https://nhmmeghalaya.nic.in/ROPs/DROP%20NHM%20Meghalaya%202024-26.xlsx
+Uttarakhand,Uttarkashi,2024-25,6.31,2.16,1.96,10.43,Uttarkashi,https://cdnbbsr.s3waas.gov.in/s37993e11204b215b27694b6f139e34ce8/uploads/2026/04/20260401966642107.pdf
+Uttarakhand,Udham Singh Nagar,2024-25,8.27,3.07,2.28,13.62,Udham Singh Nagar,https://cdnbbsr.s3waas.gov.in/s37993e11204b215b27694b6f139e34ce8/uploads/2026/04/20260401616209513.pdf
+Uttarakhand,Tehri Garhwal,2024-25,6.91,3.56,1.96,12.43,Tehri Garhwal,https://cdnbbsr.s3waas.gov.in/s37993e11204b215b27694b6f139e34ce8/uploads/2026/04/202604011801406896.pdf
+Uttarakhand,Rudraprayag,2024-25,6.31,1.49,1.96,9.76,Rudraprayag,https://cdnbbsr.s3waas.gov.in/s37993e11204b215b27694b6f139e34ce8/uploads/2026/04/202604011143395389.pdf
+Uttarakhand,Pithoragarh,2024-25,6.61,2.83,1.96,11.4,Pithoragarh,https://cdnbbsr.s3waas.gov.in/s37993e11204b215b27694b6f139e34ce8/uploads/2026/04/20260401828339821.pdf
+Uttarakhand,Garhwal,2024-25,9.82,3.82,2.28,15.92,Pauri Garhwal,https://cdnbbsr.s3waas.gov.in/s37993e11204b215b27694b6f139e34ce8/uploads/2026/04/20260401776561161.pdf
+Uttarakhand,Nainital,2024-25,7.67,2.87,6.53,17.07,Nainital,https://cdnbbsr.s3waas.gov.in/s37993e11204b215b27694b6f139e34ce8/uploads/2026/04/202604011869977335.pdf
+Uttarakhand,Hardwar,2024-25,7.67,3.0,2.28,12.95,Haridwar,https://cdnbbsr.s3waas.gov.in/s37993e11204b215b27694b6f139e34ce8/uploads/2026/04/202604011711681255.pdf
+Uttarakhand,Dehradun,2024-25,7.67,3.4,8.85,19.92,Dehradun,https://cdnbbsr.s3waas.gov.in/s37993e11204b215b27694b6f139e34ce8/uploads/2026/04/20260401960700915.pdf
+Uttarakhand,Champawat,2024-25,12.26,1.29,1.96,15.51,Champawat,https://cdnbbsr.s3waas.gov.in/s37993e11204b215b27694b6f139e34ce8/uploads/2026/04/20260401303639775.pdf
+Uttarakhand,Chamoli,2024-25,5.71,2.49,1.96,10.16,Chamoli,https://cdnbbsr.s3waas.gov.in/s37993e11204b215b27694b6f139e34ce8/uploads/2026/04/202604011037149371.pdf
+Uttarakhand,Bageshwar,2024-25,5.71,1.47,1.96,9.14,Bageshwar,https://cdnbbsr.s3waas.gov.in/s37993e11204b215b27694b6f139e34ce8/uploads/2026/04/20260401759201783.pdf
+Uttarakhand,Almora,2024-25,7.67,3.3,2.28,13.25,Almora,https://cdnbbsr.s3waas.gov.in/s37993e11204b215b27694b6f139e34ce8/uploads/2026/04/202604011369177864.pdf
+Odisha,Anugul,2024-25,9.27,0.0,2.54,11.81,Angul,https://nhmodisha.gov.in/wp-content/uploads/2024/09/Angul_PIP-2024-26.pdf
+Odisha,Baleshwar,2024-25,19.54,0.0,3.97,23.51,Balasore,https://nhmodisha.gov.in/wp-content/uploads/2024/09/Balasore-PIP-2024-26.pdf
+Odisha,Bargarh,2024-25,7.84,0.0,3.56,11.4,Baragarh,https://nhmodisha.gov.in/wp-content/uploads/2024/09/Baragarh-PIP-2024-26.pdf
+Odisha,Bhadrak,2024-25,7.8,0.0,2.52,10.32,Bhadrak,https://nhmodisha.gov.in/wp-content/uploads/2024/09/Bhadrak_PIP-2024-26.pdf
+Odisha,Balangir,2024-25,8.88,0.0,3.56,12.44,Bolangir,https://nhmodisha.gov.in/wp-content/uploads/2024/09/Bolangir-PIP-2024-26.pdf
+Odisha,Baudh,2024-25,3.79,0.0,2.51,6.3,Boudh,https://nhmodisha.gov.in/wp-content/uploads/2024/09/Boudh-PIP-2024-26.pdf
+Odisha,Cuttack,2024-25,8.96,0.0,3.58,12.54,Cuttack,https://nhmodisha.gov.in/wp-content/uploads/2024/09/Cuttack_PIP-2024-26.pdf
+Odisha,Debagarh,2024-25,6.03,0.0,2.5,8.53,Deogarh,https://nhmodisha.gov.in/wp-content/uploads/2024/09/Deogarh_PIP-2024-26.pdf
+Odisha,Dhenkanal,2024-25,12.55,0.0,2.54,15.09,Dhenkanal,https://nhmodisha.gov.in/wp-content/uploads/2024/09/Dhenkanal_PIP-2024-26.pdf
+Odisha,Gajapati,2024-25,6.6,0.0,2.52,9.12,Gajapati,https://nhmodisha.gov.in/wp-content/uploads/2024/09/Gajapati_PIP-2024-26.pdf
+Odisha,Ganjam,2024-25,24.05,0.0,4.44,28.49,Ganjam,https://nhmodisha.gov.in/wp-content/uploads/2024/09/Ganjam_PIP-2024-26.pdf
+Odisha,Jagatsinghapur,2024-25,6.86,0.0,2.53,9.39,Jagatsingpur,https://nhmodisha.gov.in/wp-content/uploads/2024/09/Jagatsingpur_PIP-2024-26.pdf
+Odisha,Jajapur,2024-25,16.71,0.0,3.95,20.66,Jajapur,https://nhmodisha.gov.in/wp-content/uploads/2024/09/Jajapur_PIP-2024-26.pdf
+Odisha,Jharsuguda,2024-25,3.17,0.0,2.51,5.68,Jharsuguda,https://nhmodisha.gov.in/wp-content/uploads/2024/09/Jharsuguda_PIP-2024-26.pdf
+Odisha,Kalahandi,2024-25,10.15,0.0,3.56,13.71,Kalahandi,https://nhmodisha.gov.in/wp-content/uploads/2024/09/Kalahandi_PIP-2024-26.pdf
+Odisha,Kandhamal,2024-25,8.69,0.0,3.55,12.24,Kandhamal,https://nhmodisha.gov.in/wp-content/uploads/2024/09/Kandhamal_PIP-2024-26.pdf
+Odisha,Kendrapara,2024-25,12.29,0.0,2.52,14.81,Kendrapada,https://nhmodisha.gov.in/wp-content/uploads/2024/09/Kendrapada_PIP-2024-26.pdf
+Odisha,Kendujhar,2024-25,8.73,0.0,3.56,12.29,Keonjhar,https://nhmodisha.gov.in/wp-content/uploads/2024/09/Keonjhar_PIP-2024-26.pdf
+Odisha,Khordha,2024-25,10.32,0.0,3.54,13.86,Khurda,https://nhmodisha.gov.in/wp-content/uploads/2024/09/Khurda-PIP-2024-26.pdf
+Odisha,Koraput,2024-25,7.06,0.0,3.55,10.61,Koraput,https://nhmodisha.gov.in/wp-content/uploads/2024/09/Koraput-PIP-2024-26.pdf
+Odisha,Malkangiri,2024-25,3.95,0.0,2.52,6.47,Malkangiri,https://nhmodisha.gov.in/wp-content/uploads/2024/09/Malkangiri-PIP-2024-26.pdf
+Odisha,Mayurbhanj,2024-25,21.82,0.0,4.44,26.26,Mayurbhanj,https://nhmodisha.gov.in/wp-content/uploads/2024/09/Mayurbhanj-PIP-2024-26.pdf
+Odisha,Nabarangapur,2024-25,9.03,0.0,3.53,12.56,Nawrangpur,https://nhmodisha.gov.in/wp-content/uploads/2024/09/Nawrangpur-PIP-2024-26.pdf
+Odisha,Nayagarh,2024-25,6.39,0.0,2.54,8.93,Nayagarh,https://nhmodisha.gov.in/wp-content/uploads/2024/09/Nayagarh-PIP-2024-26.pdf
+Odisha,Nuapada,2024-25,6.05,0.0,2.51,8.56,Nuapada,https://nhmodisha.gov.in/wp-content/uploads/2024/09/Nuapada-PIP-2024-26.pdf
+Odisha,Puri,2024-25,7.56,0.0,3.55,11.11,Puri,https://nhmodisha.gov.in/wp-content/uploads/2024/09/Puri-PIP-2024-26.pdf
+Odisha,Rayagada,2024-25,8.34,0.0,3.54,11.88,Rayagada,https://nhmodisha.gov.in/wp-content/uploads/2024/09/Rayagada-PIP-2024-26.pdf
+Odisha,Sambalpur,2024-25,4.53,0.0,2.54,7.07,Sambalpur,https://nhmodisha.gov.in/wp-content/uploads/2024/09/Sambalpur-PIP-2024-26.pdf
+Odisha,Subarnapur,2024-25,3.83,0.0,2.51,6.34,Sonepur,https://nhmodisha.gov.in/wp-content/uploads/2024/09/Sonepur-PIP-2024-26.pdf
+Odisha,Sundargarh,2024-25,8.6,0.0,3.58,12.18,Sundargarh,https://nhmodisha.gov.in/wp-content/uploads/2024/09/Sundargarh-PIP-2024-26.pdf

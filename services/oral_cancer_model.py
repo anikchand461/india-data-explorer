@@ -454,6 +454,40 @@ def district_risk(sex, rr_smokeless=DEFAULT_RR_SMOKELESS,
     return district / india
 
 
+@lru_cache(maxsize=None)
+def load_ntcp_budget():
+    """
+    Sanctioned NTCP activity budget (Rs lakh) per NFHS-5 district, from
+    NHM district RoPs, joined to the district's NFHS-5 tobacco use.
+    Only the states whose RoPs are parsed have rows.
+    """
+
+    budget = _read("ntcp_district_budget.csv")
+
+    districts = load_district_frame()[[
+        "district_id", "state", "district", "men_tobacco_pct",
+        "women_tobacco_pct", "disputed",
+    ]]
+
+    df = budget.merge(districts, on=["state", "district"], how="left")
+
+    missing = df[df["district_id"].isna()]
+
+    if len(missing):
+        raise ValueError(
+            "NTCP budget rows with no NFHS-5 district: "
+            + ", ".join(missing["state"] + " / " + missing["district"])
+        )
+
+    return df
+
+
+@lru_cache(maxsize=None)
+def load_ntcp_state_split():
+
+    return _read("ntcp_state_split.csv")
+
+
 def sources():
     """Rows for the page's sources table."""
 

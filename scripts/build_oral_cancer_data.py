@@ -17,6 +17,7 @@ from ingestion import (
     nfhs5_factsheets,
     nfhs5_report_tables,
     nfhs6_factsheets,
+    ntcp_district_rop,
     state_population,
 )
 
@@ -32,6 +33,7 @@ STEPS = [
     ("NFHS-5 state + district fact sheets", nfhs5_factsheets.run),
     ("GATS-2 tobacco type by state", gats2.run),
     ("NCRP 2020 projections and stage", ncrp2020.run),
+    ("NTCP sanctioned budgets (NHM district RoPs)", ntcp_district_rop.run),
 ]
 
 

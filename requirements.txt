@@ -9,3 +9,4 @@ pyshp
 shapely
 plotly
 pypdf
+openpyxl

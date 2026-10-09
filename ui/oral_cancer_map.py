@@ -113,6 +113,9 @@ def fmt(value, unit):
     if unit == "x":
         return f"{value:.2f}×"
 
+    if unit == "lakh":
+        return f"₹{value:,.2f} lakh"
+
     return f"{value:,.0f}"
 
 
@@ -271,10 +274,11 @@ def render_oral_cancer_page():
         "Oral cavity cancer is one of India's most common cancers, and "
         "the leading cancer in men in several registry areas. Its "
         "biggest preventable cause is **smokeless tobacco** (gutkha, "
-        "khaini, paan with tobacco). This page combines eight data "
+        "khaini, paan with tobacco). This page combines nine data "
         "sources: the national cancer registry, three survey rounds, "
-        "and district fact sheets for all 707 districts. It shows where "
-        "the risk sits, who carries it, how it is changing, and what "
+        "district fact sheets for all 707 districts, and district "
+        "tobacco control budgets. It shows where the risk sits, who "
+        "carries it, how it is changing, where the money goes, and what "
         "reducing tobacco use could achieve."
     )
 
@@ -282,6 +286,7 @@ def render_oral_cancer_page():
         "📌 Burden & key findings",
         "🗺️ States",
         "📍 Districts",
+        "💰 Tobacco control budget",
         "📈 Trend 2019→2024",
         "👥 Who uses tobacco",
         "🧮 Projection model",
@@ -298,15 +303,18 @@ def render_oral_cancer_page():
         render_districts()
 
     with tabs[3]:
-        render_trend()
+        render_ntcp()
 
     with tabs[4]:
-        render_who()
+        render_trend()
 
     with tabs[5]:
-        render_projection()
+        render_who()
 
     with tabs[6]:
+        render_projection()
+
+    with tabs[7]:
         render_sources()
 
 
@@ -857,6 +865,224 @@ def render_districts():
         table = df[columns].round(2)
         st.dataframe(table, width="stretch", hide_index=True)
         csv_download(table, "oral_cancer_district_indicators.csv")
+
+
+# --- Tab: tobacco control budget ---------------------------------------
+
+NTCP_METRICS = {
+    "Total NTCP activity budget": "ntcp_activity_total",
+    "COTPA enforcement (FMR 104)": "cotpa_104",
+    "Tobacco-free schools, ToFEI (FMR 105)": "tofei_105",
+    "Tobacco cessation (FMR 106)": "cessation_106",
+}
+
+
+def lakh(value):
+
+    return fmt(value, "lakh")
+
+
+def render_ntcp():
+
+    try:
+        df = model.load_ntcp_budget()
+        split = model.load_ntcp_state_split().set_index("state")
+    except FileNotFoundError:
+        st.warning(
+            "The tobacco control budget data hasn't been built yet. Run "
+            "`python3 -m ingestion.ntcp_district_rop` (it downloads the "
+            "NHM district RoPs; Haryana's server can take several "
+            "minutes), then reload."
+        )
+        return
+
+    st.markdown(
+        "How much each district was **sanctioned** under the National "
+        "Tobacco Control Programme (NTCP), from the National Health "
+        "Mission's district Records of Proceedings (RoPs). Set against "
+        "the district's tobacco use, it shows whether the money follows "
+        "the need."
+    )
+
+    st.info(
+        "**Sanctioned, not spent.** No state publishes district-level "
+        "NTCP expenditure; RoP approvals are the finest public figure. "
+        "Amounts cover NTCP activity lines only (FMR 104 COTPA "
+        "enforcement, 105 tobacco-free schools, 106 cessation), not "
+        "NTCP staff salaries, which RoPs book under human resources. "
+        f"**{df['state'].nunique()} states so far**; see the note at the "
+        "bottom for the others."
+    )
+
+    c1, c2 = st.columns(2)
+
+    with c1:
+        state = st.selectbox(
+            "State", sorted(df["state"].unique()), key="ntcp_state"
+        )
+
+    with c2:
+        name = st.selectbox(
+            "Budget line", list(NTCP_METRICS), key="ntcp_metric"
+        )
+
+    column = NTCP_METRICS[name]
+
+    data = df[df["state"] == state]
+
+    fy = data["fy"].iloc[0]
+
+    total = data["ntcp_activity_total"]
+
+    m1, m2, m3, m4 = st.columns(4)
+
+    m1.metric("Financial year", fy)
+    m2.metric("Districts with a RoP", f"{len(data)}")
+    m3.metric("Sanctioned to districts", lakh(total.sum()))
+    m4.metric(
+        "Typical district (median)", lakh(total.median()),
+        help=f"Range {lakh(total.min())} to {lakh(total.max())}",
+    )
+
+    geojson = model.load_geojson("districts")
+    geojson = {
+        "type": "FeatureCollection",
+        "features": [
+            f for f in geojson["features"]
+            if f["properties"]["state"] == state
+        ],
+    }
+
+    map_col, bar_col = st.columns([3, 2])
+
+    with map_col:
+
+        fig = choropleth(
+            data, geojson, "district_id", column, f"{name} (₹ lakh)",
+            "lakh",
+            hover=[
+                ("district", "", None),
+                ("ntcp_activity_total", "Total NTCP activity", "lakh"),
+                ("cotpa_104", "COTPA enforcement", "lakh"),
+                ("tofei_105", "Tobacco-free schools", "lakh"),
+                ("cessation_106", "Cessation", "lakh"),
+                ("men_tobacco_pct", "Men using tobacco", "%"),
+                ("rop_units", "RoP district(s)", None),
+            ],
+            height=560,
+        )
+        st.plotly_chart(fig, width="stretch", key="ntcp_map")
+
+    with bar_col:
+
+        st.plotly_chart(
+            ranked_bars(data, "district", column, "lakh",
+                        series_color("Both"), height=560),
+            width="stretch", key="ntcp_bars", config=BARS_CONFIG,
+        )
+
+    missing = len(geojson["features"]) - len(data)
+
+    if missing:
+        st.caption(
+            f"Grey: {missing} NFHS-5 district(s) in {state} with no "
+            "published RoP."
+        )
+
+    if data["rop_units"].str.contains(r"\+").any():
+        st.caption(
+            "Districts created after NFHS-5 are added into the NFHS-5 "
+            "district they were carved from (see the RoP district(s) "
+            "column)."
+        )
+
+    # Does the money follow the need?
+    st.markdown("##### Does the budget follow tobacco use?")
+
+    st.caption(
+        "Each dot is a district: tobacco use among men 15+ (NFHS-5, "
+        "2019-21) against its sanctioned NTCP activity budget."
+    )
+
+    fig = go.Figure(go.Scatter(
+        x=data["men_tobacco_pct"],
+        y=data["ntcp_activity_total"],
+        mode="markers",
+        marker={"size": 10, "color": series_color("Men"), "opacity": 0.85},
+        customdata=data[["district"]].to_numpy(),
+        hovertemplate=(
+            "<b>%{customdata[0]}</b><br>Men using tobacco: %{x:.1f}%"
+            "<br>Budget: ₹%{y:.2f} lakh<extra></extra>"
+        ),
+    ))
+
+    fig.update_xaxes(title="Men 15+ using tobacco (%)", showgrid=True)
+    fig.update_yaxes(title="NTCP activity budget (₹ lakh)", showgrid=True,
+                     rangemode="tozero")
+
+    st.plotly_chart(style(fig, 380), width="stretch", key="ntcp_scatter")
+
+    common = total.round(2).mode().iloc[0]
+    same = int((total.round(2) == common).sum())
+
+    if same > len(data) / 2:
+        hi = data.loc[data["men_tobacco_pct"].idxmax()]
+        lo = data.loc[data["men_tobacco_pct"].idxmin()]
+        st.markdown(
+            f"**{same} of {len(data)} districts** in {state} are "
+            f"sanctioned the same {lakh(common)}. "
+            f"{hi['district']} ({hi['men_tobacco_pct']:.1f}% of men use "
+            f"tobacco) gets {lakh(hi['ntcp_activity_total'])}; "
+            f"{lo['district']} ({lo['men_tobacco_pct']:.1f}%) gets "
+            f"{lakh(lo['ntcp_activity_total'])}."
+        )
+
+    if state in split.index:
+        row = split.loc[state]
+        whole = row["state_level_lakh"] + row["district_level_lakh"]
+        share = row["state_level_lakh"] / whole
+        lead = (
+            f"**Most of {state}'s NTCP money stays at state level.** "
+            if share > 0.5 else
+            f"**{share:.0%} of {state}'s NTCP money stays at state "
+            "level.** "
+        )
+        st.markdown(
+            lead +
+            f"Of {lakh(whole)} sanctioned for these activities in "
+            f"{row['fy']}, {lakh(row['state_level_lakh'])} "
+            f"({row['state_level_lakh'] / whole:.0%}) is held at state "
+            f"level and {lakh(row['district_level_lakh'])} goes to "
+            "districts. The map shows only the district share."
+        )
+
+    with st.expander("All districts as a table"):
+
+        columns = [
+            "state", "district", "fy", "cotpa_104", "tofei_105",
+            "cessation_106", "ntcp_activity_total", "men_tobacco_pct",
+            "rop_units", "source_url",
+        ]
+        table = df[columns].sort_values(["state", "district"])
+        st.dataframe(
+            table, width="stretch", hide_index=True,
+            column_config={
+                "source_url": st.column_config.LinkColumn("RoP"),
+            },
+        )
+        csv_download(table, "ntcp_district_sanctioned_budget.csv")
+
+    st.caption(
+        "Sources: NHM district RoPs for FY 2024-25 from Haryana, Odisha "
+        "(its approved 2024-26 district plans), Sikkim, Meghalaya and "
+        "Uttarakhand. States size their district allocations "
+        "differently, so compare districts within a state more than "
+        "across states. Not yet included: Assam (its district sheets "
+        "print two districts side by side with ambiguous totals), "
+        "Rajasthan (district annexures have no NTCP file) and Andhra "
+        "Pradesh (26 post-2022 districts that do not map onto NFHS-5's "
+        "13)."
+    )
 
 
 # --- Tab: trend --------------------------------------------------------
