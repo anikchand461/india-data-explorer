@@ -28,6 +28,41 @@ datasets across multiple government data platforms.
 - CSV export
 - Government source links
 
+## Oral Cancer & Tobacco page
+
+A dashboard on oral cavity cancer and the tobacco use behind it, with
+every number rebuilt from public sources. Sections are chosen with the
+buttons at the top of the page:
+
+| Section | What it shows |
+|---|---|
+| Burden & key findings | National oral cancer cases (NCRP) and headline findings |
+| States | State tobacco use, product mix and modelled risk |
+| Districts | NFHS-5 indicators for all 707 districts |
+| Risk matrix | District cross-matrix: estimated smokeless use, risk tier × oral cancer screening, 110 priority districts (high risk, below-national screening), and budgets for them |
+| Tobacco control budget | Sanctioned NTCP activity budget per district (FY 2024-25) from NHM district RoPs: 145 districts in 7 states |
+| Trend 2019→2024 | NFHS-5 to NFHS-6 change in tobacco use |
+| Who uses tobacco | Use by age, wealth, schooling, caste/tribe and religion, plus product mix |
+| Projection model | Attributable-fraction projection of cases avoided |
+| Sources & caveats | Every source, and data-quality issues found |
+
+**Tobacco control budget coverage.** Haryana, Odisha, Rajasthan,
+Sikkim, Meghalaya, Uttarakhand and Assam. These are sanctioned
+amounts, not spending, and cover NTCP activity lines only (FMR
+104-106). Rajasthan's districts created in 2023 are folded into the
+NFHS-5 district that held most of their 2011 population, and each
+affected district carries a `mapping_note`. Dholpur's RoP was
+published without its amounts. Andhra Pradesh is not yet included:
+its only district RoPs are FY 2026-27 scans for 26 post-2022
+districts.
+
+**Risk matrix: work in progress.** The oral cancer cases and
+switching-upside (snus / nicotine pouches) parts of the cross-matrix
+are waiting on data being sourced: district or registry oral cancer
+incidence, district smokeless use, and relative-risk and switching
+assumptions. District smokeless use is currently estimated from total
+tobacco use × the state's GATS-2 smokeless share.
+
 ## Architecture
 
 Government Data Sources
@@ -96,8 +131,10 @@ python3 -m scripts.ingest
 
 Rebuild the Oral Cancer & Tobacco page's data (downloads and parses
 the NFHS-5 report, NFHS-6 fact sheets, NFHS-5 district fact sheets,
-GATS-2, NCRP 2020 and the NFHS-5 survey boundaries; see
-`data/reference/SOURCES.md`):
+GATS-2, NCRP 2020, the NFHS-5 survey boundaries and the NHM district
+RoPs for the budget section; see `data/reference/SOURCES.md`). The
+RoP step can take several minutes, because some state NHM servers are
+slow:
 
 ```bash
 python3 -m scripts.build_oral_cancer_data

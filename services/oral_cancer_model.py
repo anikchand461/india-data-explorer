@@ -454,6 +454,83 @@ def district_risk(sex, rr_smokeless=DEFAULT_RR_SMOKELESS,
     return district / india
 
 
+# Risk tiers on the combined district risk index (India = 1). Cut-offs
+# split the 698 undisputed districts roughly 45 / 37 / 18 per cent.
+RISK_TIERS = [
+    ("Below India", 0.0, 1.0),
+    ("Elevated", 1.0, 1.25),
+    ("High", 1.25, float("inf")),
+]
+
+SEGMENTS = [
+    "Priority: high risk, low screening",
+    "High risk",
+    "Elevated",
+    "Below India",
+]
+
+
+def district_cross_matrix(rr_smokeless=DEFAULT_RR_SMOKELESS,
+                          rr_smoked=DEFAULT_RR_SMOKED):
+    """
+    One row per NFHS-5 district for the risk cross-matrix: estimated
+    smokeless use, modelled risk tier, oral cancer screening and the
+    sanctioned NTCP budget (only for states whose RoPs are parsed).
+
+    Smokeless use is estimated: NFHS-5 district fact sheets give any
+    tobacco use only, so it is that times the state's GATS-2 smokeless
+    share of users. Screening is women 30-49 ever screened for oral
+    cancer, the only district screening figure; "low" means below the
+    national rate. A priority district is high risk with low screening:
+    the most exposure and the least chance of early detection.
+    """
+
+    df = load_district_frame().copy()
+
+    share = df["smokeless_share_of_users"]
+
+    df["smokeless_men_pct"] = df["men_tobacco_pct"] * share
+    df["smokeless_women_pct"] = df["women_tobacco_pct"] * share
+
+    df["risk_index"] = district_risk("combined", rr_smokeless, rr_smoked)
+
+    df["risk_tier"] = None
+
+    for name, low, high in RISK_TIERS:
+        df.loc[
+            (df["risk_index"] >= low) & (df["risk_index"] < high),
+            "risk_tier",
+        ] = name
+
+    india_screening = load_national()["women_oral_screening"]
+
+    df["screening_low"] = df["women_oral_screening_pct"] < india_screening
+
+    df["segment"] = df["risk_tier"].map({
+        "High": "High risk", "Elevated": "Elevated",
+        "Below India": "Below India",
+    })
+
+    df.loc[
+        (df["risk_tier"] == "High") & df["screening_low"], "segment"
+    ] = SEGMENTS[0]
+
+    # Disputed districts and missing screening values get no segment.
+    df.loc[df["disputed"], "segment"] = None
+    df.loc[df["women_oral_screening_pct"].isna(), "segment"] = None
+
+    try:
+        budget = load_ntcp_budget()[
+            ["state", "district", "ntcp_activity_total", "fy"]
+        ]
+        df = df.merge(budget, on=["state", "district"], how="left")
+    except FileNotFoundError:
+        df["ntcp_activity_total"] = float("nan")
+        df["fy"] = None
+
+    return df
+
+
 @lru_cache(maxsize=None)
 def load_ntcp_budget():
     """
@@ -463,6 +540,12 @@ def load_ntcp_budget():
     """
 
     budget = _read("ntcp_district_budget.csv")
+
+    # Older builds of the CSV predate the mapping_note column.
+    if "mapping_note" not in budget:
+        budget["mapping_note"] = ""
+
+    budget["mapping_note"] = budget["mapping_note"].fillna("")
 
     districts = load_district_frame()[[
         "district_id", "state", "district", "men_tobacco_pct",

@@ -25,16 +25,26 @@ States covered, and why the others are not (yet):
     Meghalaya     FY 2024-25, one workbook with a state (SPMU) column
     Uttarakhand   FY 2024-25, 13 district PDFs
     Odisha        FY 2024-25 (from 2024-26 approvals), 30 district PDFs
+    Rajasthan     FY 2024-25 (from 2024-26 approvals), 50 district PDFs
+                  (the 2023 districts) folded into NFHS-5's 33; Dholpur's
+                  file was published without its amount columns
+    Assam         FY 2024-25, one NTCP budget sheet printed as a single
+                  wide table across 14 pages, with a state HQ column
 
-    Assam publishes a dedicated NTCP district sheet, but its totals row
-    shifts columns from page to page; Rajasthan's district annexures
-    have no NTCP folder; Andhra Pradesh's 26 post-2022 districts do not
-    map onto NFHS-5's 13.
+    Andhra Pradesh is left out: its only district RoPs are FY 2026-27
+    scans (OCR text, figures that miss their own totals), and most of
+    its 26 post-2022 districts straddle two of NFHS-5's 13.
+
+District mapping. RoPs follow current districts, NFHS-5 the 2019-21
+ones. A newer district is added to the NFHS-5 district it was carved
+from. Where it came from two or more (six Rajasthan districts), it goes
+wholly to the parent that held most of its Census 2011 population, and
+every NFHS-5 district involved carries a mapping_note saying so.
 
 Outputs (data/reference/oral_cancer/):
     ntcp_district_budget.csv  one row per NFHS-5 district
     ntcp_state_split.csv      state-HQ vs district share, where the
-                              RoP shows both (Sikkim, Meghalaya)
+                              RoP shows both (Sikkim, Meghalaya, Assam)
 """
 
 import csv
@@ -45,6 +55,7 @@ from pathlib import Path
 from urllib.parse import urljoin
 
 import openpyxl
+import pdfplumber
 import requests
 from pypdf import PdfReader
 
@@ -139,6 +150,74 @@ UTTARAKHAND_NAMES = {
     "Pauri Garhwal": "Garhwal",
 }
 
+# --- Rajasthan ---------------------------------------------------------
+
+RAJASTHAN_PAGE = "https://rajswasthya.rajasthan.gov.in/link/districtrop.php"
+
+# RoP file name (before " NHM"/" DROP"/" ROP") -> NFHS-5 district. The
+# 2023 districts go to the NFHS-5 district they were carved from.
+RAJASTHAN_NAMES = {
+    "Ajmer": "Ajmer", "Alwar": "Alwar", "Anupgarh": "Ganganagar",
+    "Balotra": "Barmer", "Banswara": "Banswara", "BARAN": "Baran",
+    "Barmer": "Barmer", "Beawar": "Ajmer", "Bharatpur": "Bharatpur",
+    "Bhilwara": "Bhilwara", "Bikaner": "Bikaner", "Bundi": "Bundi",
+    "Chittorgarh": "Chittaurgarh", "Churu": "Churu", "Dausa": "Dausa",
+    "Deedwana Kuchaman": "Nagaur", "Deeg": "Bharatpur",
+    "Dholpur": "Dhaulpur", "Dudu": "Jaipur", "Dungarpur": "Dungarpur",
+    "Gangapur City": "Sawai Madhopur", "Hanumangarh": "Hanumangarh",
+    "Jaipsalmer": "Jaisalmer", "Jaipur 1": "Jaipur", "Jaipur 2": "Jaipur",
+    "Jalore": "Jalor", "Jhalawar": "Jhalawar", "Jhunjhunu": "Jhunjhunun",
+    "Jodhpur Rural": "Jodhpur", "Jodhpur Urban": "Jodhpur",
+    "Karauli": "Karauli", "Kekri": "Ajmer", "Kherthal Tijara": "Alwar",
+    "Kota": "Kota", "Kotputli Beharor": "Alwar", "Nagaur": "Nagaur",
+    "Neem Ka Thana": "Sikar", "Pali": "Pali", "Phalodi": "Jodhpur",
+    "Pratapgarh": "Pratapgarh", "Rajsamand": "Rajsamand",
+    "Salumbar": "Udaipur", "Sanchore": "Jalor",
+    "Sawai Madhopur": "Sawai Madhopur", "Shahpura": "Bhilwara",
+    "Sikar": "Sikar", "Sirohi": "Sirohi", "Sri Ganganagar": "Ganganagar",
+    "Tonk": "Tonk", "Udaipur": "Udaipur",
+}
+
+# 2023 districts carved from more than one NFHS-5 district: share of
+# their Census 2011 population from each (tehsil populations, grouped
+# by 2011 sub-district code; citypopulation.de/en/india/rajasthan/admin).
+# Each goes wholly to its largest parent above.
+RAJASTHAN_SPLITS = {
+    "Anupgarh": {"Ganganagar": 0.80, "Bikaner": 0.20},
+    "Beawar": {"Ajmer": 0.52, "Pali": 0.39, "Bhilwara": 0.09},
+    "Gangapur City": {"Sawai Madhopur": 0.56, "Karauli": 0.44},
+    "Kekri": {"Ajmer": 0.77, "Tonk": 0.23},
+    "Kotputli Beharor": {"Alwar": 0.54, "Jaipur": 0.46},
+    "Neem Ka Thana": {"Sikar": 0.63, "Jhunjhunun": 0.37},
+}
+
+# Published without the amount columns (labels only).
+RAJASTHAN_UNREADABLE = {"Dholpur"}
+
+# --- Assam -------------------------------------------------------------
+
+ASSAM_SHEET = (
+    "https://nhm.assam.gov.in/sites/default/files/swf_utility_folder/"
+    "departments/nhm_lipl_in_oid_6/menu/document/"
+    "ntcp_nhm_district_rop_budget_sheet_2024-26.pdf"
+)
+
+# Sheet heading -> NFHS-5 district. Bajali was carved from Barpeta.
+ASSAM_NAMES = {
+    "Bajali": "Barpeta",
+    "Bongaingaon": "Bongaigaon",
+    "Charaido": "Charaideo",
+    "Dima Hassao": "Dima Hasao",
+    "Kamrup (Metro)": "Kamrup Metropolitan",
+    "Sivsagar": "Sivasagar",
+    "South Salmara": "South Salmara Mancachar",
+}
+
+# Assam numbers every non-COTPA line 106.x; its own programme labels put
+# 106.1-106.3 (school orientation, verification, college campaigns)
+# under ToFEI, i.e. the national FMR 105.
+ASSAM_TOFEI = {"106.1", "106.2", "106.3"}
+
 
 def get(url, timeout=300, attempts=4):
 
@@ -179,7 +258,7 @@ def number(value):
     return float(value)
 
 
-def row(state, district, fy, amounts, units, source):
+def row(state, district, fy, amounts, units, source, note=""):
 
     return {
         "state": state,
@@ -190,8 +269,36 @@ def row(state, district, fy, amounts, units, source):
         "cessation_106": round(amounts.get("106", 0.0), 2),
         "ntcp_activity_total": round(sum(amounts.values()), 2),
         "rop_units": units,
+        "mapping_note": note,
         "source_url": source,
     }
+
+
+def combine(state, fy, units, listing):
+    """
+    One row per NFHS-5 district from {unit: (district, amounts, url)},
+    summing the RoP units that fold into the same district. A row built
+    from several RoPs links to the state's listing page.
+    """
+
+    rows = []
+
+    for district in sorted({d for d, _, _ in units.values()}):
+
+        names = [u for u, (d, _, _) in units.items() if d == district]
+
+        amounts = {}
+
+        for name in names:
+            for code, value in units[name][1].items():
+                amounts[code] = amounts.get(code, 0.0) + value
+
+        rows.append(row(
+            state, district, fy, amounts, " + ".join(names),
+            units[names[0]][2] if len(names) == 1 else listing,
+        ))
+
+    return rows
 
 
 # --- Parsers -----------------------------------------------------------
@@ -635,7 +742,281 @@ def odisha():
     return rows, []
 
 
-STATES = [haryana, sikkim, meghalaya, uttarakhand, odisha]
+def parse_rajasthan_pdf(pdf_bytes):
+    """
+    {code: lakh} for FY 2024-25 from a district RoP's NCD.4 table, where
+    labels wrap and the S.No. column carries the code:
+
+                               Implementation of COTPA -
+                        104    2003                       0.60    0.60
+                        105    Implementation of ToEFI    3.85    3.85
+                        106    Tobacco Cessation          4.50    4.50
+                          Total NTCP                      8.95    8.95
+
+    The first amount on a code's line is 2024-25. The lines must add up
+    to "Total NTCP".
+    """
+
+    reader = PdfReader(io.BytesIO(pdf_bytes))
+
+    amounts = {}
+
+    for page in reader.pages:
+
+        text = page.extract_text(extraction_mode="layout") or ""
+
+        if not re.search(r"COTPA|ToEFI|Tobacco|NTCP", text):
+            continue
+
+        for line in text.splitlines():
+
+            match = re.match(r"^.{0,60}?\s(10[4-6])\s+(.*)$", line)
+
+            if match:
+                amount = re.search(r"(?<![\d.])(\d+\.\d+)\s", match.group(2) + " ")
+                amounts.setdefault(
+                    match.group(1), float(amount.group(1)) if amount else 0.0
+                )
+
+            total = re.search(r"Total NTCP\s+(\d+\.\d+)", line)
+
+            if total:
+                total = float(total.group(1))
+
+                if abs(sum(amounts.values()) - total) > 0.02:
+                    raise ValueError(
+                        f"Rajasthan: NTCP lines {amounts} don't sum to "
+                        f"Total NTCP {total}"
+                    )
+
+                return amounts
+
+    raise ValueError("Rajasthan: Total NTCP row not found")
+
+
+def rajasthan():
+
+    html = get(RAJASTHAN_PAGE, timeout=60).text
+
+    files = {}
+
+    for path in re.findall(r"openPDF\('([^']+\.pdf)'\)", html):
+
+        name = re.sub(r"%20", " ", path.rsplit("/", 1)[1])
+
+        # 2024-26 approvals only (Hanumangarh's is misnamed "2024 23").
+        if re.search(r"26-27|letter", name, re.I):
+            continue
+
+        stem = re.split(r"\s+(?:NHM|D?RoP)\b", name, flags=re.I)[0].strip()
+
+        if stem not in RAJASTHAN_NAMES:
+            raise ValueError(f"Rajasthan: unknown RoP file {name}")
+
+        files[stem] = urljoin(RAJASTHAN_PAGE, path.replace(" ", "%20"))
+
+    if len(files) != len(RAJASTHAN_NAMES):
+        raise ValueError(
+            f"Rajasthan: found {len(files)} of {len(RAJASTHAN_NAMES)} "
+            f"district RoPs; missing {sorted(set(RAJASTHAN_NAMES) - set(files))}"
+        )
+
+    units = {}
+
+    for stem, url in sorted(files.items()):
+
+        if stem in RAJASTHAN_UNREADABLE:
+            print(f"  Rajasthan: {stem} skipped (no amounts in file)")
+            continue
+
+        print(f"  Rajasthan: {stem}")
+
+        units[stem] = (
+            RAJASTHAN_NAMES[stem], parse_rajasthan_pdf(get(url).content), url
+        )
+
+    rows = combine("Rajasthan", "2024-25", units, RAJASTHAN_PAGE)
+
+    for r in rows:
+        r["mapping_note"] = rajasthan_note(r["district"])
+
+    return rows, []
+
+
+def rajasthan_note(district):
+    """Which split 2023 districts this NFHS-5 district gains or loses."""
+
+    notes = []
+
+    for unit, shares in RAJASTHAN_SPLITS.items():
+
+        if district not in shares:
+            continue
+
+        home = RAJASTHAN_NAMES[unit]
+        others = ", ".join(
+            f"{share:.0%} {d}" for d, share in shares.items() if d != home
+        )
+
+        if district == home:
+            notes.append(
+                f"includes all of {unit} ({shares[home]:.0%} from "
+                f"{home}; {others})"
+            )
+        else:
+            notes.append(
+                f"excludes {unit} ({shares[district]:.0%} from "
+                f"{district}; counted under {home})"
+            )
+
+    return "; ".join(notes)
+
+
+def assam():
+    """
+    The NTCP sheet is one wide table split over 14 pages. Reading left
+    to right across pages, every row has: fresh approval (2 columns),
+    5 text columns, state HQ (6), then for each of 34 districts a basis
+    column and quantity / unit cost / amount for 2024-25 and 2025-26
+    (7), then State Total and "Total fund allocated to the districts"
+    (2 each). The "Programme Total" row fills every column, so it fixes
+    the column positions on each page; activity lines are read against
+    them and must add up to both the district and the sheet totals.
+    """
+
+    print("  Assam: NTCP district budget sheet")
+
+    pdf = pdfplumber.open(io.BytesIO(get(ASSAM_SHEET).content))
+
+    numeric = re.compile(r"^\d+(\.\d+)?$")
+
+    columns = {}         # page -> [(x centre, sheet column)]
+    totals = []
+    names = {}
+    lines = {}           # code -> {sheet column: value}
+
+    for number_, page in enumerate(pdf.pages):
+
+        words = page.extract_words(x_tolerance=1.5)
+
+        label = next(w for w in words if w["text"] == "Total:")
+
+        for w in sorted(
+            (w for w in words if abs(w["top"] - label["top"]) < 3
+             and w["x0"] > label["x1"] and numeric.match(w["text"])),
+            key=lambda w: w["x0"],
+        ):
+            columns.setdefault(number_, []).append(
+                ((w["x0"] + w["x1"]) / 2, len(totals))
+            )
+            totals.append(float(w["text"]))
+
+        heading = {}
+        for w in words:
+            if w["top"] < 70:
+                heading.setdefault(round(w["top"]), []).append(w)
+
+        for ws in heading.values():
+            text = " ".join(
+                w["text"] for w in sorted(ws, key=lambda w: w["x0"])
+            )
+            names.update({
+                int(n): name.strip() for n, name in re.findall(
+                    r"(\d+)\s*-\s*Fund allocated to (.+?)"
+                    r"(?=\s+\d+\s*-\s*Fund|\s+State Total|\s+Total fund|$)",
+                    text,
+                )
+            })
+
+        # Values sit on the same baseline as their row's code, to the
+        # right of the label columns.
+        for code in (w for w in words if w["x0"] < 100):
+
+            found = re.match(r"^(10[46]\.\d+)", code["text"])
+
+            if not found:
+                continue
+
+            for w in words:
+                if (abs(w["top"] - code["top"]) < 3 and w["x0"] > 330
+                        and numeric.match(w["text"])):
+                    x = (w["x0"] + w["x1"]) / 2
+                    gap, column = min(
+                        (abs(x - cx), c) for cx, c in columns[number_]
+                    )
+                    if gap < 16:
+                        lines.setdefault(found.group(1), {})[column] = (
+                            float(w["text"])
+                        )
+
+    count = len(names)
+    lead = 13
+
+    if sorted(names) != list(range(1, count + 1)) or (
+            len(totals) != lead + 7 * count + 4):
+        raise ValueError(
+            f"Assam: {count} district headings and {len(totals)} total "
+            "columns don't fit the expected layout"
+        )
+
+    def amount_2024(values, i):
+        return values.get(lead + 7 * i + 3, 0.0)
+
+    district_fund = len(totals) - 2      # "Total fund ... 2024-25"
+
+    for code, values in lines.items():
+        spread = sum(amount_2024(values, i) for i in range(count))
+        if abs(spread - values.get(district_fund, 0.0)) > 0.011:
+            raise ValueError(
+                f"Assam {code}: districts sum to {spread:.2f}, sheet says "
+                f"{values.get(district_fund, 0.0):.2f}"
+            )
+
+    units = {}
+
+    for i in range(count):
+
+        amounts = {"104": 0.0, "105": 0.0, "106": 0.0}
+
+        for code, values in lines.items():
+            key = (
+                "104" if code.startswith("104")
+                else "105" if code in ASSAM_TOFEI else "106"
+            )
+            amounts[key] += amount_2024(values, i)
+
+        if abs(sum(amounts.values()) - amount_2024(
+                dict(enumerate(totals)), i)) > 0.011:
+            raise ValueError(f"Assam: {names[i + 1]} lines miss its total")
+
+        name = names[i + 1]
+        units[name] = (ASSAM_NAMES.get(name, name), amounts, ASSAM_SHEET)
+
+    rows = combine("Assam", "2024-25", units, ASSAM_SHEET)
+
+    state_level = totals[lead - 4]       # state HQ, 2024-25 amount
+    districts = sum(r["ntcp_activity_total"] for r in rows)
+
+    if abs(state_level + districts - totals[0]) > 0.02:
+        raise ValueError(
+            "Assam: state HQ plus districts doesn't match the fresh "
+            "2024-25 approval"
+        )
+
+    split = [{
+        "state": "Assam",
+        "fy": "2024-25",
+        "state_level_lakh": round(state_level, 2),
+        "district_level_lakh": round(districts, 2),
+        "source_url": ASSAM_SHEET,
+    }]
+
+    return rows, split
+
+
+STATES = [
+    haryana, sikkim, meghalaya, uttarakhand, odisha, rajasthan, assam,
+]
 
 
 def write(path, rows):

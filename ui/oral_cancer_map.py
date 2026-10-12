@@ -282,40 +282,23 @@ def render_oral_cancer_page():
         "reducing tobacco use could achieve."
     )
 
-    tabs = st.tabs([
-        "📌 Burden & key findings",
-        "🗺️ States",
-        "📍 Districts",
-        "💰 Tobacco control budget",
-        "📈 Trend 2019→2024",
-        "👥 Who uses tobacco",
-        "🧮 Projection model",
-        "📚 Sources & caveats",
-    ])
+    # Nine sections overflow a tab strip, so they are pills that wrap;
+    # only the chosen section is rendered.
+    choice = st.pills(
+        "Section", list(SECTIONS), default=next(iter(SECTIONS)),
+        key="oral_section", label_visibility="collapsed",
+    )
 
-    with tabs[0]:
-        render_burden()
+    # Clicking the selected pill again deselects it; stay put instead.
+    if choice is None:
+        choice = st.session_state.get("oral_section_last",
+                                      next(iter(SECTIONS)))
 
-    with tabs[1]:
-        render_states()
+    st.session_state["oral_section_last"] = choice
 
-    with tabs[2]:
-        render_districts()
+    st.divider()
 
-    with tabs[3]:
-        render_ntcp()
-
-    with tabs[4]:
-        render_trend()
-
-    with tabs[5]:
-        render_who()
-
-    with tabs[6]:
-        render_projection()
-
-    with tabs[7]:
-        render_sources()
+    SECTIONS[choice]()
 
 
 # --- Tab: burden -------------------------------------------------------
@@ -867,6 +850,267 @@ def render_districts():
         csv_download(table, "oral_cancer_district_indicators.csv")
 
 
+# --- Tab: risk matrix --------------------------------------------------
+
+# Most to least urgent: red, orange, amber, blue.
+SEGMENT_COLORS = {
+    "dark": ["#e66767", "#d95926", "#d9a520", "#3987e5"],
+    "light": ["#e34948", "#eb6834", "#c98f0c", "#2a78d6"],
+}
+
+
+def segment_map(df, geojson, height=600):
+    """Districts coloured by risk segment, one legend entry each."""
+
+    fig = go.Figure()
+
+    all_ids = [f["id"] for f in geojson["features"]]
+
+    fig.add_trace(go.Choropleth(
+        geojson=geojson, locations=all_ids, z=[0] * len(all_ids),
+        colorscale=[[0, NO_DATA[theme()]], [1, NO_DATA[theme()]]],
+        showscale=False, marker_line_color=NEUTRAL[theme()],
+        marker_line_width=0.4, showlegend=False,
+        hovertemplate="%{location}<br>No data<extra></extra>",
+    ))
+
+    for name, color in zip(model.SEGMENTS, SEGMENT_COLORS[theme()]):
+
+        part = df[df["segment"] == name]
+
+        if part.empty:
+            continue
+
+        fig.add_trace(go.Choropleth(
+            geojson=geojson, locations=part["district_id"],
+            z=[1] * len(part), colorscale=[[0, color], [1, color]],
+            showscale=False, name=name, showlegend=True,
+            marker_line_color=NEUTRAL[theme()], marker_line_width=0.5,
+            customdata=part[[
+                "district", "state", "risk_index", "smokeless_men_pct",
+                "smokeless_women_pct", "women_oral_screening_pct",
+            ]].to_numpy(),
+            hovertemplate=(
+                "<b>%{customdata[0]}</b>, %{customdata[1]}<br>"
+                f"{name}<br>"
+                "Risk index: %{customdata[2]:.2f}× India<br>"
+                "Smokeless use (est.): men %{customdata[3]:.1f}%, "
+                "women %{customdata[4]:.1f}%<br>"
+                "Women 30-49 ever screened: %{customdata[5]:.1f}%"
+                "<extra></extra>"
+            ),
+        ))
+
+    lon_min, lat_min, lon_max, lat_max = bounds(geojson)
+    pad = 0.03 * max(lon_max - lon_min, lat_max - lat_min)
+
+    fig.update_geos(
+        visible=False, bgcolor="rgba(0,0,0,0)",
+        projection_type="mercator",
+        lonaxis_range=[lon_min - pad, lon_max + pad],
+        lataxis_range=[lat_min - pad, lat_max + pad],
+    )
+
+    style(fig, height)
+    fig.update_layout(legend={"orientation": "h", "y": 1.02, "x": 0})
+
+    return fig
+
+
+def render_matrix():
+
+    df = model.district_cross_matrix()
+    india_screening = model.load_national()["women_oral_screening"]
+
+    st.markdown(
+        "A cross-matrix of four things for every district: **smokeless "
+        "tobacco use**, **oral cancer**, **risk** and the **potential "
+        "upside of switching** to lower-risk nicotine products. Two are "
+        "ready now; the other two are waiting on data being sourced."
+    )
+
+    st.markdown(
+        "| Part | Status | What it uses |\n"
+        "|---|---|---|\n"
+        "| Smokeless tobacco use | ✅ Estimated | NFHS-5 district tobacco "
+        "use × the state's GATS-2 smokeless share of users |\n"
+        "| Risk districts | ✅ Modelled | The page's oral cancer risk "
+        "index plus oral cancer screening coverage |\n"
+        "| Oral cancer cases | ⏳ Awaiting data | District or registry "
+        "incidence (being sourced) |\n"
+        "| Upside of switching | ⏳ Awaiting data | Relative risk of snus "
+        "and nicotine pouches, and switching rates (being sourced) |"
+    )
+
+    state = st.selectbox(
+        "Zoom to state", ["All India"] + sorted(df["state"].unique()),
+        key="matrix_state",
+    )
+
+    geojson = model.load_geojson("districts")
+    scope = df
+
+    if state != "All India":
+        scope = df[df["state"] == state]
+        geojson = {
+            "type": "FeatureCollection",
+            "features": [
+                f for f in geojson["features"]
+                if f["properties"]["state"] == state
+            ],
+        }
+
+    rated = scope.dropna(subset=["segment"])
+    priority = rated[rated["segment"] == model.SEGMENTS[0]]
+
+    m1, m2, m3, m4 = st.columns(4)
+
+    m1.metric("Districts", f"{len(rated)}")
+    m2.metric(
+        "High risk", f"{(rated['risk_tier'] == 'High').sum()}",
+        help="Risk index at least 1.25× India.",
+    )
+    m3.metric(
+        "Priority districts", f"{len(priority)}",
+        help=(
+            "High risk and fewer women 30-49 ever screened than the "
+            f"national {india_screening:.1f}%."
+        ),
+    )
+    m4.metric(
+        "Median women screened", fmt(
+            rated["women_oral_screening_pct"].median(), "%"
+        ),
+        help=f"India: {india_screening:.1f}% of women 30-49.",
+    )
+
+    left, right = st.columns([2, 3])
+
+    with left:
+
+        st.markdown("##### Risk × screening")
+
+        tiers = [name for name, _, _ in model.RISK_TIERS][::-1]
+        cols = [True, False]
+        counts = [
+            [int(((rated["risk_tier"] == t)
+                  & (rated["screening_low"] == low)).sum()) for low in cols]
+            for t in tiers
+        ]
+        total = max(len(rated), 1)
+
+        fig = go.Figure(go.Heatmap(
+            z=counts,
+            x=[f"Screening below India ({india_screening:.1f}%)",
+               "At or above India"],
+            y=[f"{t} risk" if t != "Below India" else "Below India"
+               for t in tiers],
+            text=[[f"{c}<br>{c / total:.0%}" for c in row]
+                  for row in counts],
+            texttemplate="%{text}",
+            colorscale=sequential_scale(), showscale=False,
+            hovertemplate="%{y}, %{x}: %{z} districts<extra></extra>",
+        ))
+
+        fig.update_yaxes(autorange="reversed")
+        fig.update_xaxes(side="top")
+
+        st.plotly_chart(style(fig, 320), width="stretch",
+                        key="matrix_heat", config=BARS_CONFIG)
+
+        st.caption(
+            "Risk tiers on the district risk index (India = 1): below "
+            "1.0, 1.0 to 1.25, and 1.25 or more. Top-left is the "
+            "priority cell: most exposure, least early detection."
+        )
+
+    with right:
+
+        st.plotly_chart(segment_map(scope, geojson, 520),
+                        width="stretch", key="matrix_map")
+
+    st.markdown("##### Priority districts")
+
+    if priority.empty:
+        st.caption(f"No priority districts in {state}.")
+    else:
+        show = priority.sort_values("risk_index", ascending=False)
+        st.dataframe(
+            show[[
+                "district", "state", "risk_index", "smokeless_men_pct",
+                "smokeless_women_pct", "women_oral_screening_pct",
+                "ntcp_activity_total",
+            ]].round(2).rename(columns={
+                "district": "District", "state": "State",
+                "risk_index": "Risk index (India = 1)",
+                "smokeless_men_pct": "Men, smokeless (est. %)",
+                "smokeless_women_pct": "Women, smokeless (est. %)",
+                "women_oral_screening_pct": "Women 30-49 screened (%)",
+                "ntcp_activity_total": "NTCP budget (₹ lakh)",
+            }),
+            hide_index=True, width="stretch",
+        )
+
+    # Where budgets exist, does money follow risk? Compare within a
+    # state only: states size district allocations very differently.
+    funded = rated.dropna(subset=["ntcp_activity_total"])
+
+    if len(funded):
+
+        st.markdown("##### Does the tobacco control budget follow risk?")
+
+        rows = []
+
+        for name, group in funded.groupby("state"):
+            pri = group[group["segment"] == model.SEGMENTS[0]]
+            rest = group[group["segment"] != model.SEGMENTS[0]]
+            rows.append({
+                "State": name,
+                "Districts with budget": len(group),
+                "Priority districts": len(pri),
+                "Median budget, priority (₹ lakh)":
+                    pri["ntcp_activity_total"].median(),
+                "Median budget, others (₹ lakh)":
+                    rest["ntcp_activity_total"].median(),
+            })
+
+        st.dataframe(pd.DataFrame(rows).round(2), hide_index=True,
+                     width="stretch")
+
+        st.caption(
+            "Sanctioned NTCP activity budgets (FY 2024-25) from the "
+            "Tobacco control budget tab, for the 7 states parsed so far. "
+            "Compare within a state: allocations are sized differently "
+            "from state to state."
+        )
+
+    with st.expander("Full cross-matrix as a table"):
+
+        table = scope[[
+            "state", "district", "smokeless_men_pct", "smokeless_women_pct",
+            "men_tobacco_pct", "women_tobacco_pct", "risk_index",
+            "risk_tier", "women_oral_screening_pct", "segment",
+            "ntcp_activity_total",
+        ]].round(2).assign(**{
+            "oral_cancer_cases": "awaiting data",
+            "switching_upside": "awaiting data",
+        }).sort_values("risk_index", ascending=False)
+
+        st.dataframe(table, width="stretch", hide_index=True)
+        csv_download(table, "oral_cancer_risk_cross_matrix.csv")
+
+    st.caption(
+        "Caveats: smokeless use is estimated. Within a state, districts "
+        "differ only in total tobacco use, because the smokeless share "
+        "comes from GATS-2 at state level. Screening is the only "
+        "district figure available, and covers women 30-49 only. The risk "
+        "index is relative, not a case count. Each district estimate "
+        "rests on about 800-1,000 households, so neighbouring tiers "
+        "overlap within sampling error. Grey districts are disputed in "
+        "the source extractions."
+    )
+
+
 # --- Tab: tobacco control budget ---------------------------------------
 
 NTCP_METRICS = {
@@ -986,7 +1230,7 @@ def render_ntcp():
     if missing:
         st.caption(
             f"Grey: {missing} NFHS-5 district(s) in {state} with no "
-            "published RoP."
+            "usable RoP."
         )
 
     if data["rop_units"].str.contains(r"\+").any():
@@ -994,6 +1238,21 @@ def render_ntcp():
             "Districts created after NFHS-5 are added into the NFHS-5 "
             "district they were carved from (see the RoP district(s) "
             "column)."
+        )
+
+    notes = data[data["mapping_note"] != ""]
+
+    if len(notes):
+        st.caption(
+            "**Approximate:** some newer districts were carved from more "
+            "than one NFHS-5 district. Each is counted wholly in the one "
+            "that held most of its 2011 population, so these totals are "
+            "a little high or low: "
+            + "; ".join(
+                f"{r.district} {r.mapping_note}"
+                for r in notes.itertuples()
+            )
+            + "."
         )
 
     # Does the money follow the need?
@@ -1061,7 +1320,7 @@ def render_ntcp():
         columns = [
             "state", "district", "fy", "cotpa_104", "tofei_105",
             "cessation_106", "ntcp_activity_total", "men_tobacco_pct",
-            "rop_units", "source_url",
+            "rop_units", "mapping_note", "source_url",
         ]
         table = df[columns].sort_values(["state", "district"])
         st.dataframe(
@@ -1074,14 +1333,14 @@ def render_ntcp():
 
     st.caption(
         "Sources: NHM district RoPs for FY 2024-25 from Haryana, Odisha "
-        "(its approved 2024-26 district plans), Sikkim, Meghalaya and "
-        "Uttarakhand. States size their district allocations "
-        "differently, so compare districts within a state more than "
-        "across states. Not yet included: Assam (its district sheets "
-        "print two districts side by side with ambiguous totals), "
-        "Rajasthan (district annexures have no NTCP file) and Andhra "
-        "Pradesh (26 post-2022 districts that do not map onto NFHS-5's "
-        "13)."
+        "and Rajasthan (their approved 2024-26 district plans), Sikkim, "
+        "Meghalaya, Uttarakhand and Assam (its NTCP district budget "
+        "sheet). States size their district allocations differently, so "
+        "compare districts within a state more than across states. "
+        "Rajasthan's Dholpur RoP was published without its amount "
+        "columns. Not yet included: Andhra Pradesh, whose only district "
+        "RoPs are scanned FY 2026-27 files for 26 post-2022 districts, "
+        "most of which straddle two of NFHS-5's 13."
     )
 
 
@@ -1563,3 +1822,18 @@ source and parses it, refusing to write partial output. Run
 `python3 -m scripts.build_oral_cancer_data` to rebuild everything.
 """
     )
+
+
+# --- Sections (defined last: they point at the render functions) -------
+
+SECTIONS = {
+    "📌 Burden & key findings": render_burden,
+    "🗺️ States": render_states,
+    "📍 Districts": render_districts,
+    "🎯 Risk matrix": render_matrix,
+    "💰 Tobacco control budget": render_ntcp,
+    "📈 Trend 2019→2024": render_trend,
+    "👥 Who uses tobacco": render_who,
+    "🧮 Projection model": render_projection,
+    "📚 Sources & caveats": render_sources,
+}
