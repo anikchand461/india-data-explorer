@@ -39,7 +39,7 @@ buttons at the top of the page:
 | Burden & key findings | National oral cancer cases (NCRP) and headline findings |
 | States | State tobacco use, product mix and modelled risk |
 | Districts | NFHS-5 indicators for all 707 districts |
-| Risk matrix | District cross-matrix: estimated smokeless use, risk tier × oral cancer screening (110 priority districts: high risk, below-national screening), modelled oral cancer cases, budgets, and a snus / nicotine-pouch switching scenario |
+| Risk matrix | District cross-matrix: estimated smokeless use, risk tier × oral cancer screening (110 priority districts: high risk, below-national screening), modelled oral cancer cases, budgets, and a switching scenario for snus and nicotine pouches (global alternatives with claimed lower health risks) |
 | Tobacco control budget | Sanctioned NTCP activity budget per district (FY 2024-25) from NHM district RoPs: 145 districts in 7 states |
 | Trend 2019→2024 | NFHS-5 to NFHS-6 change in tobacco use |
 | Who uses tobacco | Use by age, wealth, schooling, caste/tribe and religion, plus product mix |

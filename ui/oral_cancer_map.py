@@ -925,7 +925,8 @@ def render_matrix():
     st.markdown(
         "A cross-matrix of four things for every district: **smokeless "
         "tobacco use**, **oral cancer**, **risk** and the **potential "
-        "upside of switching** to lower-risk nicotine products. All four "
+        "upside of switching** to global alternatives with claimed lower "
+        "health risks (snus, nicotine pouches). All four "
         "work now; two are models that real data will replace."
     )
 
@@ -1130,12 +1131,16 @@ def render_matrix():
 def render_switching(state, geojson):
     """The switching-upside scenario: sliders, headline, map, top list."""
 
-    st.markdown("##### Upside of switching to lower-risk products")
+    st.markdown(
+        "##### Upside of switching to global alternatives (snus, "
+        "nicotine pouches)"
+    )
 
     st.caption(
-        "A scenario, not a forecast. Some smokeless tobacco users "
-        "(gutkha, khaini, paan with tobacco) switch to snus or nicotine "
-        "pouches. Their oral cancer risk drops from "
+        "A scenario, not a forecast. Snus and nicotine pouches are "
+        "global alternatives with claimed lower health risks. Here some "
+        "smokeless tobacco users (gutkha, khaini, paan with tobacco) "
+        "switch to them, and their oral cancer risk drops from "
         f"{model.DEFAULT_RR_SMOKELESS}× a non-user's to the product's "
         "risk. The figures show the cases avoided each year once the "
         "change has worked through, which takes decades."
