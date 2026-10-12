@@ -39,7 +39,7 @@ buttons at the top of the page:
 | Burden & key findings | National oral cancer cases (NCRP) and headline findings |
 | States | State tobacco use, product mix and modelled risk |
 | Districts | NFHS-5 indicators for all 707 districts |
-| Risk matrix | District cross-matrix: estimated smokeless use, risk tier × oral cancer screening, 110 priority districts (high risk, below-national screening), and budgets for them |
+| Risk matrix | District cross-matrix: estimated smokeless use, risk tier × oral cancer screening (110 priority districts: high risk, below-national screening), modelled oral cancer cases, budgets, and a snus / nicotine-pouch switching scenario |
 | Tobacco control budget | Sanctioned NTCP activity budget per district (FY 2024-25) from NHM district RoPs: 145 districts in 7 states |
 | Trend 2019→2024 | NFHS-5 to NFHS-6 change in tobacco use |
 | Who uses tobacco | Use by age, wealth, schooling, caste/tribe and religion, plus product mix |
@@ -56,12 +56,15 @@ published without its amounts. Andhra Pradesh is not yet included:
 its only district RoPs are FY 2026-27 scans for 26 post-2022
 districts.
 
-**Risk matrix: work in progress.** The oral cancer cases and
-switching-upside (snus / nicotine pouches) parts of the cross-matrix
-are waiting on data being sourced: district or registry oral cancer
-incidence, district smokeless use, and relative-risk and switching
-assumptions. District smokeless use is currently estimated from total
-tobacco use × the state's GATS-2 smokeless share.
+**Risk matrix: modelled parts.** Oral cancer cases per district are
+modelled: each state's projected cases (NCRP) are shared out by
+district population (WorldPop 2020) × risk. They are to be checked
+against cancer registry data. The switching upside is a scenario with
+adjustable assumptions: the share of smokeless users who switch, and
+the product's risk, which defaults to 1.0 from Swedish snus studies.
+District smokeless use is estimated from total tobacco use × the
+state's GATS-2 smokeless share, until the NFHS-5 microdata (requested
+from the DHS Program) arrives.
 
 ## Architecture
 

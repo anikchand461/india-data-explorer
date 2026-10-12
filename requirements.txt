@@ -10,4 +10,5 @@ shapely
 plotly
 pypdf
 pdfplumber
+rasterio
 openpyxl

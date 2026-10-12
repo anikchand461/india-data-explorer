@@ -925,8 +925,8 @@ def render_matrix():
     st.markdown(
         "A cross-matrix of four things for every district: **smokeless "
         "tobacco use**, **oral cancer**, **risk** and the **potential "
-        "upside of switching** to lower-risk nicotine products. Two are "
-        "ready now; the other two are waiting on data being sourced."
+        "upside of switching** to lower-risk nicotine products. All four "
+        "work now; two are models that real data will replace."
     )
 
     st.markdown(
@@ -936,10 +936,12 @@ def render_matrix():
         "use × the state's GATS-2 smokeless share of users |\n"
         "| Risk districts | ✅ Modelled | The page's oral cancer risk "
         "index plus oral cancer screening coverage |\n"
-        "| Oral cancer cases | ⏳ Awaiting data | District or registry "
-        "incidence (being sourced) |\n"
-        "| Upside of switching | ⏳ Awaiting data | Relative risk of snus "
-        "and nicotine pouches, and switching rates (being sourced) |"
+        "| Oral cancer cases | 🟡 Modelled | Each state's projected "
+        "cases (NCRP) shared out by district population (WorldPop 2020) "
+        "× risk; to be checked against cancer registry data |\n"
+        "| Upside of switching | 🟡 Scenario | Adjustable share of "
+        "smokeless users who switch and the product's risk (defaults "
+        "from Swedish snus studies); to be replaced by agreed figures |"
     )
 
     state = st.selectbox(
@@ -1039,17 +1041,28 @@ def render_matrix():
             show[[
                 "district", "state", "risk_index", "smokeless_men_pct",
                 "smokeless_women_pct", "women_oral_screening_pct",
-                "ntcp_activity_total",
+                "cases", "ntcp_activity_total",
             ]].round(2).rename(columns={
                 "district": "District", "state": "State",
                 "risk_index": "Risk index (India = 1)",
                 "smokeless_men_pct": "Men, smokeless (est. %)",
                 "smokeless_women_pct": "Women, smokeless (est. %)",
                 "women_oral_screening_pct": "Women 30-49 screened (%)",
+                "cases": "Oral cancers / year (modelled)",
                 "ntcp_activity_total": "NTCP budget (₹ lakh)",
             }),
             hide_index=True, width="stretch",
         )
+
+        st.caption(
+            f"The {len(priority)} priority districts account for about "
+            f"{priority['cases'].sum():,.0f} new oral cavity cancers a "
+            f"year (modelled, {model.DEFAULT_YEAR}), "
+            f"{priority['cases'].sum() / max(scope['cases'].sum(), 1):.0%} "
+            f"of {'India' if state == 'All India' else state}'s total."
+        )
+
+    render_switching(state, geojson)
 
     # Where budgets exist, does money follow risk? Compare within a
     # state only: states size district allocations very differently.
@@ -1087,13 +1100,15 @@ def render_matrix():
     with st.expander("Full cross-matrix as a table"):
 
         table = scope[[
-            "state", "district", "smokeless_men_pct", "smokeless_women_pct",
-            "men_tobacco_pct", "women_tobacco_pct", "risk_index",
-            "risk_tier", "women_oral_screening_pct", "segment",
+            "state", "district", "population_2020", "smokeless_men_pct",
+            "smokeless_women_pct", "men_tobacco_pct", "women_tobacco_pct",
+            "risk_index", "risk_tier", "women_oral_screening_pct",
+            "segment", "cases", "cases_per_100k", "cases_avoided",
             "ntcp_activity_total",
-        ]].round(2).assign(**{
-            "oral_cancer_cases": "awaiting data",
-            "switching_upside": "awaiting data",
+        ]].round(2).rename(columns={
+            "cases": "oral_cancer_cases_modelled",
+            "cases_per_100k": "oral_cancer_per_100k_modelled",
+            "cases_avoided": "cases_avoided_default_switching",
         }).sort_values("risk_index", ascending=False)
 
         st.dataframe(table, width="stretch", hide_index=True)
@@ -1107,7 +1122,109 @@ def render_matrix():
         "index is relative, not a case count. Each district estimate "
         "rests on about 800-1,000 households, so neighbouring tiers "
         "overlap within sampling error. Grey districts are disputed in "
-        "the source extractions."
+        "the source extractions. Oral cancer cases are modelled, not "
+        "counted: no district-level cancer counts exist for most of India."
+    )
+
+
+def render_switching(state, geojson):
+    """The switching-upside scenario: sliders, headline, map, top list."""
+
+    st.markdown("##### Upside of switching to lower-risk products")
+
+    st.caption(
+        "A scenario, not a forecast. Some smokeless tobacco users "
+        "(gutkha, khaini, paan with tobacco) switch to snus or nicotine "
+        "pouches. Their oral cancer risk drops from "
+        f"{model.DEFAULT_RR_SMOKELESS}× a non-user's to the product's "
+        "risk. The figures show the cases avoided each year once the "
+        "change has worked through, which takes decades."
+    )
+
+    c1, c2 = st.columns(2)
+
+    with c1:
+        switch = st.slider(
+            "Smokeless users who switch (%)", 0, 100,
+            model.DEFAULT_SWITCH_PCT, 5, key="switch_pct",
+        )
+
+    with c2:
+        rr = st.slider(
+            "Oral cancer risk of the product (non-user = 1.0)", 1.0, 3.0,
+            model.DEFAULT_RR_ALTERNATIVE, 0.1, key="switch_rr",
+            help=(
+                "1.0 = no extra risk, as Swedish snus studies suggest "
+                "(Luo et al. 2007; Lee & Hamling 2009). Nicotine pouches "
+                "have no long-term cancer data yet; raise this to test "
+                f"that. Smokeless tobacco today: {model.DEFAULT_RR_SMOKELESS}."
+            ),
+        )
+
+    df = model.district_cross_matrix(switch_pct=switch, rr_alternative=rr)
+
+    if state != "All India":
+        df = df[df["state"] == state]
+
+    df = df.assign(
+        avoided_per_100k=df["cases_avoided"] / df["population_2020"] * 1e5
+    )
+
+    priority = df[df["segment"] == model.SEGMENTS[0]]
+    total = df["cases_avoided"].sum()
+
+    m1, m2, m3 = st.columns(3)
+
+    m1.metric(
+        "Cases avoided a year (long run)", f"{total:,.0f}",
+        help=f"Out of {df['cases'].sum():,.0f} modelled a year.",
+    )
+    m2.metric(
+        "Share of oral cancers avoided",
+        f"{total / max(df['cases'].sum(), 1):.1%}",
+    )
+    m3.metric(
+        "Of which in priority districts", f"{priority['cases_avoided'].sum():,.0f}",
+        help="High-risk, low-screening districts (see above).",
+    )
+
+    left, right = st.columns([3, 2])
+
+    with left:
+        fig = choropleth(
+            df[~df["disputed"]], geojson, "district_id", "avoided_per_100k",
+            "Cases avoided per 100,000 a year", "n",
+            hover=[
+                ("district", "", None),
+                ("state", "State", None),
+                ("cases_avoided", "Cases avoided a year", "n"),
+                ("cases", "Oral cancers a year (modelled)", "n"),
+                ("segment", "Segment", None),
+            ],
+            height=520,
+        )
+        st.plotly_chart(fig, width="stretch", key="switch_map")
+
+    with right:
+        top = df.sort_values("cases_avoided", ascending=False).head(15)
+        st.markdown("Most cases avoided")
+        st.dataframe(
+            top[["district", "state", "cases_avoided", "segment"]]
+            .round(0).rename(columns={
+                "district": "District", "state": "State",
+                "cases_avoided": "Cases avoided / year",
+                "segment": "Segment",
+            }),
+            hide_index=True, width="stretch",
+        )
+
+    st.caption(
+        "Assumptions to confirm: the risk figure and switching rate are "
+        "placeholders until agreed figures are sourced. The model leaves "
+        "out dual use (people using both products), new users the "
+        "products might draw in, and any change in smoking. Snus and "
+        "nicotine pouches do not have a clear legal status in India, so "
+        "this shows potential health impact only."
     )
 
 

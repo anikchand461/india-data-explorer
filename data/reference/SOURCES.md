@@ -20,6 +20,7 @@ two consecutive rebuilds produce byte-identical files.
 | `gats2_tobacco_type_by_state.csv` | `gats2` | GATS-2 India Report Table 4.6 | India + 32 states |
 | `ncrp_oral_cancer_projections.csv` | `ncrp2020` | NCRP 2020 Table 14.1 | India x sex x year (tongue, mouth) |
 | `ncrp_mouth_cancer_stage.csv` | `ncrp2020` | NCRP 2020 Table 9.2.1 | India x sex x stage |
+| `district_population_2020.csv` | `district_population` | WorldPop 2020 1 km grid (UN-adjusted), summed over NFHS-5 district boundaries | 707 districts |
 | `state_population_2011_current.csv` | `state_population` | `state_population_2011.csv`, split to current units | 36 states |
 | `../../geo/nfhs5_states.geojson`, `nfhs5_districts.geojson` | `nfhs5_boundaries` | DHS Spatial Data Repository, survey IA2020DHS | 36 states, 707 districts |
 

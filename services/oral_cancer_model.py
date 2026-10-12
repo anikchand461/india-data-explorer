@@ -470,8 +470,106 @@ SEGMENTS = [
 ]
 
 
+# Switching scenario defaults. Swedish snus studies find no clear excess
+# oral cancer risk (Luo et al. 2007, Lancet; Lee & Hamling 2009, BMC
+# Medicine), so a switcher's risk defaults to a non-user's (1.0).
+# Nicotine pouches have no long-term epidemiology at all; the page
+# lets the risk be raised to test that uncertainty.
+DEFAULT_SWITCH_PCT = 25
+DEFAULT_RR_ALTERNATIVE = 1.0
+
+# Year of the NCRP projection that district cases are shared out from.
+DEFAULT_YEAR = 2025
+
+
+@lru_cache(maxsize=None)
+def load_district_population():
+
+    return _read("district_population_2020.csv")
+
+
+def district_cases(year=DEFAULT_YEAR, switch_pct=DEFAULT_SWITCH_PCT,
+                   rr_alternative=DEFAULT_RR_ALTERNATIVE,
+                   rr_smokeless=DEFAULT_RR_SMOKELESS,
+                   rr_smoked=DEFAULT_RR_SMOKED):
+    """
+    Modelled new oral cavity cancers per district, and the long-run
+    cases avoided if switch_pct% of smokeless users moved to a product
+    with relative risk rr_alternative (non-user = 1).
+
+    Each state's projected cases (project(), by sex) are shared out to
+    its districts in proportion to population x the district's risk
+    index, the same way national cases are shared between states. So
+    district counts always add up to the state's.
+
+    Switching: smokeless users who switch carry rr_alternative instead
+    of rr_smokeless; everyone else is unchanged. Cases avoided are
+    cases x (1 - R_after / R_now), reached only after the decades-long
+    lag between exposure and cancer, and ignoring dual use and any new
+    users the product draws in.
+    """
+
+    states, _ = project(year=year, rr_smokeless=rr_smokeless,
+                        rr_smoked=rr_smoked)
+    states = states.set_index("state")
+
+    df = load_district_frame().merge(
+        load_district_population()[["district_id", "population_2020"]],
+        on="district_id", how="left",
+    )
+
+    female = df["state"].map(load_state_frame().set_index("state")[
+        "female_share"])
+
+    share = df["smokeless_share_of_users"]
+    switch = max(0.0, min(100.0, switch_pct)) / 100.0
+
+    df["cases"] = 0.0
+    df["cases_avoided"] = 0.0
+
+    for sex in ("men", "women"):
+
+        p = df[f"{sex}_tobacco_pct"] / 100.0
+        p_slt = p * share
+        p_smk = p * (1 - share)
+
+        r_now = 1 + p_slt * (rr_smokeless - 1) + p_smk * (rr_smoked - 1)
+
+        r_after = (
+            1
+            + p_slt * (1 - switch) * (rr_smokeless - 1)
+            + p_slt * switch * (rr_alternative - 1)
+            + p_smk * (rr_smoked - 1)
+        )
+
+        people = df["population_2020"] * (
+            female if sex == "women" else 1 - female
+        )
+
+        weight = people * r_now
+        state_weight = weight.groupby(df["state"]).transform("sum")
+
+        cases = (
+            df["state"].map(states[f"{sex}_cases"]) * weight / state_weight
+        )
+
+        df[f"{sex}_cases"] = cases
+        df["cases"] += cases
+        df["cases_avoided"] += cases * (1 - r_after / r_now)
+
+    df["cases_per_100k"] = df["cases"] / df["population_2020"] * 1e5
+    df["avoided_pct"] = df["cases_avoided"] / df["cases"] * 100
+
+    return df[[
+        "district_id", "population_2020", "men_cases", "women_cases",
+        "cases", "cases_per_100k", "cases_avoided", "avoided_pct",
+    ]]
+
+
 def district_cross_matrix(rr_smokeless=DEFAULT_RR_SMOKELESS,
-                          rr_smoked=DEFAULT_RR_SMOKED):
+                          rr_smoked=DEFAULT_RR_SMOKED,
+                          switch_pct=DEFAULT_SWITCH_PCT,
+                          rr_alternative=DEFAULT_RR_ALTERNATIVE):
     """
     One row per NFHS-5 district for the risk cross-matrix: estimated
     smokeless use, modelled risk tier, oral cancer screening and the
@@ -518,6 +616,14 @@ def district_cross_matrix(rr_smokeless=DEFAULT_RR_SMOKELESS,
     # Disputed districts and missing screening values get no segment.
     df.loc[df["disputed"], "segment"] = None
     df.loc[df["women_oral_screening_pct"].isna(), "segment"] = None
+
+    df = df.merge(
+        district_cases(
+            switch_pct=switch_pct, rr_alternative=rr_alternative,
+            rr_smokeless=rr_smokeless, rr_smoked=rr_smoked,
+        ),
+        on="district_id", how="left",
+    )
 
     try:
         budget = load_ntcp_budget()[
