@@ -3,3 +3,5 @@ __pycache__/
 *.pyc
 .venv/
 venv/
+# NFHS-5 unit-level microdata (DHS Program terms forbid redistribution)
+data/raw/nfhs5_microdata/
